@@ -53,6 +53,7 @@ void init(REAL A[], int N) {
  *
  */
 int main(int argc, char *argv[]) {
+    // Local variables
     int N = VECTOR_LENGTH;
     int M = M;
     double elapsed; /* for timing */
@@ -60,17 +61,19 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Usage: assignment1 <n> <m> (default %d)\n", N);
         exit(1);
     }
+    // Read command line input
     N = atoi(argv[1]);
     M = atoi(argv[2]);
-    //REAL A[N][M]; /* wrong, you should do the following */
-    REAL* A = malloc(sizeof(REAL)*N*M);
-    REAL* B = malloc(sizeof(REAL)*N*M);
-    REAL* C = malloc(sizeof(REAL)*N*M);
-
+    // Allocate arrays dynamically
+    REAL* A = malloc(sizeof(REAL) * N * M);
+    REAL* B = malloc(sizeof(REAL) * N * M);
+    REAL* C = malloc(sizeof(REAL) * N * M);
+    // Initialize arrays
     srand48((1 << 12));
-    init(A, N*M);
-    init(B, N*M);
-    /* example run */
+    init(A, N * M);
+    init(B, N * M);
+
+    // Run matrix_addition with four variants
     double elapsed_matrixAdd_row_row = read_timer();
     matrix_addition(N, M, A, B, C, 1, 1);
     elapsed_matrixAdd_row_row  = (read_timer() - elapsed_matrixAdd_row_row);
@@ -87,11 +90,12 @@ int main(int argc, char *argv[]) {
     matrix_addition(N, M, A, B, C, 0, 0);
     elapsed_matrixAdd_col_col = (read_timer() - elapsed_matrixAdd_col_col);
 
+    // Free allocated memory
     free(A);
     free(B);
     free(C);
 
-    /* you should add the call to each function and time the execution */
+    /* Print out results */
     printf("======================================================================================================\n");
     printf("\tN: %d, M: %d, K: %d\n", N, M, N);
     printf("------------------------------------------------------------------------------------------------------\n");
