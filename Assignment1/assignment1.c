@@ -6,6 +6,8 @@
  *
  ********************************/
 
+ //Note: Check the flop operation. Number of flop per operation.
+
 // Include files
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +17,6 @@
 
 // Macro
 #define REAL float
-#define VECTOR_LENGTH 512
 
 // Function Prototype
 /* C[N][M] = A[N][M] + B[N][M] */
@@ -54,8 +55,7 @@ void init(REAL A[], int N) {
  */
 int main(int argc, char *argv[]) {
     // Local variables
-    int N = VECTOR_LENGTH;
-    int M = M;
+    int N, M;
     double elapsed; /* for timing */
     if (argc < 3) {
         fprintf(stderr, "Usage: assignment1 <n> <m> (default %d)\n", N);
@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
     // Read command line input
     N = atoi(argv[1]);
     M = atoi(argv[2]);
+    int K = N; // As specified in Instruction
     // Allocate arrays dynamically
     REAL* A = malloc(sizeof(REAL) * N * M);
     REAL* B = malloc(sizeof(REAL) * N * M);
@@ -90,25 +91,70 @@ int main(int argc, char *argv[]) {
     matrix_addition(N, M, A, B, C, 0, 0);
     elapsed_matrixAdd_col_col = (read_timer() - elapsed_matrixAdd_col_col);
 
+    // Run matrix_multiplication with four variants
+    double elapsed_matrixMult_row_row = read_timer();
+    matrix_multiplication(N, K, M, A, B, C, 1, 1);
+    elapsed_matrixMult_row_row = (read_timer() - elapsed_matrixMult_row_row);
+
+    double elapsed_matrixMult_row_col = read_timer();
+    matrix_multiplication(N, K, M, A, B, C, 1, 0);
+    elapsed_matrixMult_row_col = (read_timer() - elapsed_matrixMult_row_col);
+
+    double elapsed_matrixMult_col_row = read_timer();
+    matrix_multiplication(N, K, M, A, B, C, 0, 1);
+    elapsed_matrixMult_col_row = (read_timer() - elapsed_matrixMult_col_row);
+
+    double elapsed_matrixMult_col_col = read_timer();
+    matrix_multiplication(N, K, M, A, B, C, 0, 0);
+    elapsed_matrixMult_col_col = (read_timer() - elapsed_matrixMult_col_col);
+
+    // Run mv_multiplication with two variants
+    double elapsed_mvMult_row = read_timer();
+    mv_multiplication(N, M, A, B, C, 1);
+    elapsed_mvMult_row = (read_timer() - elapsed_mvMult_row);
+
+    double elapsed_mvMult_col = read_timer();
+    mv_multiplication(N, M, A, B, C, 1);
+    elapsed_mvMult_col = (read_timer() - elapsed_mvMult_col);
+
     // Free allocated memory
     free(A);
     free(B);
     free(C);
 
     /* Print out results */
+
+    // matrix_addition result
     printf("======================================================================================================\n");
     printf("\tN: %d, M: %d, K: %d\n", N, M, N);
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Performance:\t\t\t\tRuntime (ms)\t MFLOPS \n");
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("matrix addition row row:\t\t%4f\t%4f\n",  elapsed_matrixAdd_row_row * 1.0e3,
-		    M*N / (1.0e6 *  elapsed_matrixAdd_row_row));
+		    M * N / (1.0e6 *  elapsed_matrixAdd_row_row));
     printf("matrix addition row col:\t\t%4f\t%4f\n",  elapsed_matrixAdd_row_col * 1.0e3,
-		    M*N / (1.0e6 *  elapsed_matrixAdd_row_col));
+		    M * N / (1.0e6 *  elapsed_matrixAdd_row_col));
     printf("matrix addition col row:\t\t%4f\t%4f\n",  elapsed_matrixAdd_col_row * 1.0e3,
-		    M*N / (1.0e6 *  elapsed_matrixAdd_col_row));
+		    M * N / (1.0e6 *  elapsed_matrixAdd_col_row));
     printf("matrix addition col col:\t\t%4f\t%4f\n",  elapsed_matrixAdd_col_col * 1.0e3,
-		    M*N / (1.0e6 *  elapsed_matrixAdd_col_col));
+		    M * N / (1.0e6 *  elapsed_matrixAdd_col_col));
+
+    // matrix_multiplication result
+    printf("matrix multiplication row row:\t\t%4f\t%4f\n",  elapsed_matrixMult_row_row * 1.0e3,
+		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_row_row));
+    printf("matrix multiplication row col:\t\t%4f\t%4f\n",  elapsed_matrixMult_row_col * 1.0e3,
+		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_row_col));
+    printf("matrix multiplication col row:\t\t%4f\t%4f\n",  elapsed_matrixMult_col_row * 1.0e3,
+		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_col_row));
+    printf("matrix multiplication col col:\t\t%4f\t%4f\n",  elapsed_matrixMult_col_col * 1.0e3,
+		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_col_col));
+
+    // mv_multiplication result
+    printf("mv multiplication row:\t\t\t%4f\t%4f\n",  elapsed_mvMult_row * 1.0e3,
+		    ((2 * M - 1) * N) / (1.0e6 *  elapsed_mvMult_row));
+    printf("mv multiplication col:\t\t\t%4f\t%4f\n",  elapsed_mvMult_col * 1.0e3,
+		    ((2 * M - 1) * N) / (1.0e6 *  elapsed_mvMult_col));
+
     return 0;
 } // end of function
 
@@ -154,23 +200,39 @@ void matrix_addition(int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, in
     }
   }
 } // end of function
-
+/* C[N][M] = A[N][K] * B[K][M] */
 void matrix_multiplication(int N, int K, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, int B_rowMajor) {
-  if (A_rowMajor != 0 && B_rowMajor != 0) {
+  if (A_rowMajor != 0 && B_rowMajor != 0) { /* A is row major, B is row major */
+    int i, j, l;
+    REAL sum = 0;
+    for (i=0; i<N; i++) {
+     for (j=0; j<M; j++) {
+       for (l=0; l<K; l++) {
+         int A_rowOffset = i * K + l;
+         int B_rowOffset = l * M + j;
+         //sum = sum + first[i][l]*second[l][j];
+         sum += ( A[A_rowOffset] * B[B_rowOffset] );
+       }
+       int C_rowOffset = i * M + j;
+       //multiply[c][d] = sum;
+       C[C_rowOffset] = sum;
+       sum = 0;
+      }
+    }
 
-  } else if (A_rowMajor != 0 && B_rowMajor == 0) {
+  } else if (A_rowMajor != 0 && B_rowMajor == 0) { /* A is row major, B is col major */
 
-  } else if (A_rowMajor == 0 && B_rowMajor != 0) {
+  } else if (A_rowMajor == 0 && B_rowMajor != 0) { /* A is col major, B is row major */
 
-  } else {
+  } else { /* A is col major, B is col major */
 
   }
 } // end of function
 
 void mv_multiplication (int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor) {
-  if (A_rowMajor != 0) {
+  if (A_rowMajor != 0) { /* A is row major */
 
-  } else {
+  } else { /* A is col major */
 
   }
 } // end of function
