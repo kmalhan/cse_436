@@ -299,8 +299,31 @@ void matrix_multiplication(int N, int K, int M, REAL* A, REAL* B, REAL* C, int A
 void mv_multiplication (int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor) {
 
   if (A_rowMajor != 0) { /* A is row major */
+    int i, j;
+    REAL sum = 0;
+    for (i=0; i<N; i++) {
+      for (j=0; j<M; j++) {
+        // Calculate offset
+        int rowMajor_offset = i * M + j;
+        sum += ( A[rowMajor_offset] + B[j] );
+      }
+      C[i] = sum;
+      // Clear sum for next calculation
+      sum = 0;
+    }
 
   } else { /* A is col major */
-
+    int i, j;
+    REAL sum = 0;
+    for (i=0; i<N; i++) {
+      for (j=0; j<M; j++) {
+        // Calculate offset
+        int colMajor_offset = j * N + i;
+        sum += ( A[colMajor_offset] + B[j] );
+      }
+      C[i] = sum;
+      // Clear sum for next calculation
+      sum = 0;
+    }
   }
 } // end of function
