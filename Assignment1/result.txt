@@ -1,0 +1,45 @@
+======================================================================================================
+	N: 2048, M: 2048, K: 2048
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS 
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		50.000191	83.885760
+matrix addition row col:		94.999790	44.150666
+matrix addition col row:		95.000029	44.150555
+matrix addition col col:		100.000143	41.942980
+matrix multiplication row row:		61271.999836	-0.068454
+matrix multiplication row col:		36086.000204	-0.116231
+matrix multiplication col row:		71105.999947	-0.058987
+matrix multiplication col col:		60851.000071	-0.068927
+mv multiplication row:			14.999866	559.108977
+mv multiplication col:			15.000105	559.100090
+======================================================================================================
+	N: 1024, M: 1024, K: 1024
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS 
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		13.000011	80.659621
+matrix addition row col:		19.999981	52.428850
+matrix addition col row:		17.999887	58.254586
+matrix addition col col:		29.999971	34.952567
+matrix multiplication row row:		8229.000092	260.837896
+matrix multiplication row col:		4398.000002	488.047993
+matrix multiplication col row:		12342.000008	173.913067
+matrix multiplication col col:		7854.000092	273.291959
+mv multiplication row:			3.999949	524.038747
+mv multiplication col:			3.999949	524.038747
+======================================================================================================
+	N: 512, M: 512, K: 512
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS 
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		3.000021	87.380722
+matrix addition row col:		5.000114	52.427600
+matrix addition col row:		4.999876	52.430100
+matrix addition col col:		6.000042	43.690361
+matrix multiplication row row:		1368.000031	196.033118
+matrix multiplication row col:		542.000055	494.784658
+matrix multiplication col row:		1039.999962	257.858963
+matrix multiplication col col:		956.000090	280.515990
+mv multiplication row:			0.999928	523.813966
+mv multiplication col:			0.999928	523.813966
