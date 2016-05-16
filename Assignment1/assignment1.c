@@ -158,7 +158,9 @@ int main(int argc, char *argv[]) {
     return 0;
 } // end of function
 
+/* C[N][M] = A[N][M] + B[N][M] */
 void matrix_addition(int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, int B_rowMajor) {
+
 	if (A_rowMajor != 0 && B_rowMajor != 0) { /* A is row major, B is row major */
 		int i, j;
 		for (i=0; i<N; i++) {
@@ -168,6 +170,7 @@ void matrix_addition(int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, in
 		    C[offset] = A[offset] + B[offset];
 			}
     }
+
 	} else if (A_rowMajor != 0 && B_rowMajor == 0) { /* A is row major and B is col major */
 		int i, j;
 		for (i=0; i<N; i++) {
@@ -178,6 +181,7 @@ void matrix_addition(int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, in
 		    C[rowMajor_offset] = A[rowMajor_offset] + B[colMajor_offset];
 			}
     }
+
 	} else if (A_rowMajor == 0 && B_rowMajor != 0) { /* A is col major and B is row major */
     int i, j;
     for (i=0; i<N; i++) {
@@ -188,6 +192,7 @@ void matrix_addition(int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, in
         C[rowMajor_offset] = A[colMajor_offset] + B[rowMajor_offset];
       }
     }
+
   } else { /* A is col major and B is col major */
     int i, j;
     for (i=0; i<N; i++) {
@@ -200,36 +205,99 @@ void matrix_addition(int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, in
     }
   }
 } // end of function
+
 /* C[N][M] = A[N][K] * B[K][M] */
 void matrix_multiplication(int N, int K, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor, int B_rowMajor) {
+
   if (A_rowMajor != 0 && B_rowMajor != 0) { /* A is row major, B is row major */
     int i, j, l;
     REAL sum = 0;
     for (i=0; i<N; i++) {
      for (j=0; j<M; j++) {
        for (l=0; l<K; l++) {
+         // Calculate offset location
          int A_rowOffset = i * K + l;
          int B_rowOffset = l * M + j;
-         //sum = sum + first[i][l]*second[l][j];
+         // Add each multiplication
          sum += ( A[A_rowOffset] * B[B_rowOffset] );
        }
+       // Calculate offset location
        int C_rowOffset = i * M + j;
-       //multiply[c][d] = sum;
+       // Place result in C matrix location
        C[C_rowOffset] = sum;
+       // Clear sum for next calculation
        sum = 0;
       }
     }
 
   } else if (A_rowMajor != 0 && B_rowMajor == 0) { /* A is row major, B is col major */
+    int i, j, l;
+    REAL sum = 0;
+    for (i=0; i<N; i++) {
+     for (j=0; j<M; j++) {
+       for (l=0; l<K; l++) {
+         // Calculate offset location
+         int A_rowOffset = i * K + l;
+         int B_colOffset = j * K + l;
+         // Add each multiplication
+         sum += ( A[A_rowOffset] * B[B_colOffset] );
+       }
+       // Calculate offset location
+       int C_rowOffset = i * M + j;
+       // Place result in C matrix location
+       C[C_rowOffset] = sum;
+       // Clear sum for next calculation
+       sum = 0;
+      }
+    }
 
   } else if (A_rowMajor == 0 && B_rowMajor != 0) { /* A is col major, B is row major */
+    int i, j, l;
+    REAL sum = 0;
+    for (i=0; i<N; i++) {
+     for (j=0; j<M; j++) {
+       for (l=0; l<K; l++) {
+         // Calculate offset location
+         int A_colOffset = l * N + i;
+         int B_rowOffset = l * M + j;
+         // Add each multiplication
+         sum += ( A[A_colOffset] * B[B_rowOffset] );
+       }
+       // Calculate offset location
+       int C_rowOffset = i * M + j;
+       // Place result in C matrix location
+       C[C_rowOffset] = sum;
+       // Clear sum for next calculation
+       sum = 0;
+      }
+    }
 
   } else { /* A is col major, B is col major */
-
+    int i, j, l;
+    REAL sum = 0;
+    for (i=0; i<N; i++) {
+     for (j=0; j<M; j++) {
+       for (l=0; l<K; l++) {
+         // Calculate offset location
+         int A_colOffset = l * N + i;
+         int B_colOffset = j * K + l;
+         // Add each multiplication
+         sum += ( A[A_colOffset] * B[B_colOffset] );
+       }
+       // Calculate offset location
+       int C_rowOffset = i * M + j;
+       // Place result in C matrix location
+       C[C_rowOffset] = sum;
+       // Clear sum for next calculation
+       sum = 0;
+      }
+    }
   }
 } // end of function
 
+/* C[N] = A[N][M] * B[M] */
 void mv_multiplication (int N, int M, REAL* A, REAL* B, REAL* C, int A_rowMajor) {
+
   if (A_rowMajor != 0) { /* A is row major */
 
   } else { /* A is col major */
