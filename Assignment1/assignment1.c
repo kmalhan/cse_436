@@ -138,16 +138,16 @@ int main(int argc, char *argv[]) {
 		    M * N / (1.0e6 *  elapsed_matrixAdd_col_row));
     printf("matrix addition col col:\t\t%4f\t%4f\n",  elapsed_matrixAdd_col_col * 1.0e3,
 		    M * N / (1.0e6 *  elapsed_matrixAdd_col_col));
-
+    
     // matrix_multiplication result
     printf("matrix multiplication row row:\t\t%4f\t%4f\n",  elapsed_matrixMult_row_row * 1.0e3,
-		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_row_row));
+		    ((long)M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_row_row));
     printf("matrix multiplication row col:\t\t%4f\t%4f\n",  elapsed_matrixMult_row_col * 1.0e3,
-		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_row_col));
+		    ((long)M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_row_col));
     printf("matrix multiplication col row:\t\t%4f\t%4f\n",  elapsed_matrixMult_col_row * 1.0e3,
-		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_col_row));
+		    ((long)M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_col_row));
     printf("matrix multiplication col col:\t\t%4f\t%4f\n",  elapsed_matrixMult_col_col * 1.0e3,
-		    (M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_col_col));
+		    ((long)M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_col_col));
 
     // mv_multiplication result
     printf("mv multiplication row:\t\t\t%4f\t%4f\n",  elapsed_mvMult_row * 1.0e3,
