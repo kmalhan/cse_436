@@ -1,0 +1,109 @@
+
+Assignment1 Test Run
+
+==Platform that code is running==
+Linux lennon.secs.oakland.edu 2.6.32-504.30.3.el6.x86_64 #1 SMP Tue Jul 14 11:18:03 CDT 2015 x86_64 x86_64 x86_64 GNU/Linux
+
+== Optimization Level 0 ==
+================ Run 1 ==================
+======================================================================================================
+	N: 512, M: 512, K: 512
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		1.000166	262.100507
+matrix addition row col:		1.999855	131.081501
+matrix addition col row:		2.000093	131.065875
+matrix addition col col:		3.000021	87.380722
+matrix multiplication row row:		1016.999960	263.690583
+matrix multiplication row col:		511.999846	523.776158
+matrix multiplication col row:		1082.000017	247.849637
+matrix multiplication col col:		990.000010	270.882131
+mv multiplication row:			1.000166	523.689099
+mv multiplication col:			0.999928	523.813966
+
+================ Run 2 ==================
+======================================================================================================
+	N: 1024, M: 1024, K: 1024
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		5.999804	174.768389
+matrix addition row col:		16.000032	65.535867
+matrix addition col row:		9.000063	116.507630
+matrix addition col col:		9.000063	116.507630
+matrix multiplication row row:		8335.000038	257.520703
+matrix multiplication row col:		4105.000019	522.883085
+matrix multiplication col row:		8933.999777	240.254659
+matrix multiplication col col:		8186.000109	262.208043
+mv multiplication row:			3.999949	524.038747
+mv multiplication col:			3.000021	698.704447
+
+================ Run 3 ==================
+======================================================================================================
+	N: 2048, M: 2048, K: 2048
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		21.000147	199.727365
+matrix addition row col:		50.999880	82.241449
+matrix addition col row:		49.999952	83.886160
+matrix addition col col:		52.000046	80.659621
+matrix multiplication row row:		65752.000093	261.219048
+matrix multiplication row col:		32520.999908	528.141045
+matrix multiplication col row:		70546.999931	243.464285
+matrix multiplication col col:		62664.000034	274.091582
+mv multiplication row:			14.000177	599.032410
+mv multiplication col:			13.999939	599.042612
+
+== Optimization Level 3 ==
+================ Run 4 ==================
+======================================================================================================
+	N: 512, M: 512, K: 512
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		0.000000	 inf
+matrix addition row col:		0.999928	262.163001
+matrix addition col row:		1.000166	262.100507
+matrix addition col col:		0.999928	262.163001
+matrix multiplication row row:		336.999893	795.766757
+matrix multiplication row col:		140.000105	1915.522222
+matrix multiplication col row:		667.000055	402.058905
+matrix multiplication col col:		363.999844	736.740185
+mv multiplication row:			0.000000	 inf
+mv multiplication col:			0.000000	 inf
+
+================ Run 5 ==================
+======================================================================================================
+	N: 1024, M: 1024, K: 1024
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		2.000093	524.263501
+matrix addition row col:		3.000021	349.522889
+matrix addition col row:		3.000021	349.522889
+matrix addition col col:		5.999804	174.768389
+matrix multiplication row row:		2739.000082	783.656447
+matrix multiplication row col:		1088.000059	1972.826246
+matrix multiplication col row:		5213.000059	411.746604
+matrix multiplication col col:		2821.999788	760.607808
+mv multiplication row:			1.000166	2095.780228
+mv multiplication col:			0.999928	2096.279937
+
+================ Run 6 ==================
+======================================================================================================
+	N: 2048, M: 2048, K: 2048
+------------------------------------------------------------------------------------------------------
+Performance:				Runtime (ms)	 MFLOPS
+------------------------------------------------------------------------------------------------------
+matrix addition row row:		6.999969	599.188898
+matrix addition row col:		17.000198	246.720886
+matrix addition col row:		18.999815	220.754992
+matrix addition col col:		26.999950	155.344878
+matrix multiplication row row:		21128.000021	812.934251
+matrix multiplication row col:		8697.000027	1974.896496
+matrix multiplication col row:		42406.000137	405.029355
+matrix multiplication col col:		22419.999838	766.087199
+mv multiplication row:			4.000187	2096.542029
+mv multiplication col:			3.999949	2096.666994
