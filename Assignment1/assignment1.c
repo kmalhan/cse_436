@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     elapsed_mvMult_row = (read_timer() - elapsed_mvMult_row);
 
     double elapsed_mvMult_col = read_timer();
-    mv_multiplication(N, M, A, B, C, 1);
+    mv_multiplication(N, M, A, B, C, 0);
     elapsed_mvMult_col = (read_timer() - elapsed_mvMult_col);
 
     // Free allocated memory
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
 		    M * N / (1.0e6 *  elapsed_matrixAdd_col_row));
     printf("matrix addition col col:\t\t%4f\t%4f\n",  elapsed_matrixAdd_col_col * 1.0e3,
 		    M * N / (1.0e6 *  elapsed_matrixAdd_col_col));
-    
+
     // matrix_multiplication result
     printf("matrix multiplication row row:\t\t%4f\t%4f\n",  elapsed_matrixMult_row_row * 1.0e3,
 		    ((long)M * N * (2 * K - 1)) / (1.0e6 *  elapsed_matrixMult_row_row));
