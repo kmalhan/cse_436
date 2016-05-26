@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.6.4)
 project(OpenMP)
 
+# Steps to compile codes using CMake
+# 1. Change directory to build
+# 2. cmake ..
+# 3. make
+# 4. Run executable you want to run
+
 # Bring the headers into project
 include_directories(include)
 
