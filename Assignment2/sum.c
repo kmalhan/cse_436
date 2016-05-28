@@ -1,6 +1,11 @@
 /*
+ * Assignment 2 (CSE436)
+ * Kazumi Malhan
+ * 06/08/2016
+ *
  * Sum of A[N]
  */
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -32,9 +37,16 @@ void init(REAL *A, int N) {
     }
 }
 
+/* Function Prototypes */
 REAL sum (int N, REAL *A);
 REAL sum_omp_parallel (int N, REAL *A, int num_tasks);
 REAL sum_omp_parallel_for (int N, REAL *A, int num_tasks);
+
+/* 
+ * To compile: gcc sum.c -fopenmp -o sum
+ * To run: ./sum
+ *
+ */
 
 int main(int argc, char *argv[]) {
     int N = VECTOR_LENGTH;
@@ -52,12 +64,27 @@ int main(int argc, char *argv[]) {
 
     srand48((1 << 12));
     init(A, N);
-    /* example run */
-    elapsed = read_timer();
+    
+	/* Serial Run */
+    elapsed_serial = read_timer();
     REAL result = sum(N, A);
-    elapsed = (read_timer() - elapsed);
-
-    /* more runs */
+    elapsed_serial = (read_timer() - elapsed_serial);
+	
+	printf("Serial Result: %f\n", result); // debug
+	
+	/* Parallel Run */
+    elapsed_para = read_timer();
+    REAL result = sum_omp_parallel(N, A, num_tasks);
+    elapsed_para = (read_timer() - elapsed_para);
+	
+	printf("Serial Result: %f\n", result); // debug
+	
+	/* Parallel For Run */
+    elapsed_para_for = read_timer();
+    REAL result = sum_omp_parallel_for(N, A, num_tasks);
+    elapsed_para_for = (read_timer() - elapsed_para_for);
+	
+	printf("Serial Result: %f\n", result); // debug
 
     /* you should add the call to each function and time the execution */
     printf("======================================================================================================\n");
@@ -65,11 +92,14 @@ int main(int argc, char *argv[]) {
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Performance:\t\tRuntime (ms)\t MFLOPS \n");
     printf("------------------------------------------------------------------------------------------------------\n");
-    printf("Sum:\t\t\t%4f\t%4f\n", elapsed * 1.0e3, 2*N / (1.0e6 * elapsed));
-    free(A);
+    printf("Sum:\t\t\t%4f\t%4f\n", elapsed_serial * 1.0e3, 2*N / (1.0e6 * elapsed_serial));
+    
+	
+	free(A);
     return 0;
 }
 
+/* Serial Implemenration */
 REAL sum(int N, REAL *A) {
     int i;
     REAL result = 0.0;
@@ -77,3 +107,40 @@ REAL sum(int N, REAL *A) {
         result += A[i];
     return result;
 }
+
+/* Parallel Implemenration */
+REAL sum(int N, REAL *A, int num_tasks) {
+	REAL result = 0.0;
+	#pragma omp parallel shared (N, A, num_tasks, result)
+	{
+		int i, tid, istart, iend;
+		
+		tid = omp_get_thread_num();
+		istart = tid * (N / num_tasks);
+		iend = (tid + 1) * (N / num_tasks);
+		
+		for (i = istart; i < iend; ++i) {
+			#pragma omp atomic
+			result += A[i];	/* Must be atomic */
+		}
+	} // end of parallel
+    return result;
+}
+
+/* Parallel For Implemenration */
+REAL sum(int N, REAL *A, int num_tasks) {
+    int i;
+    REAL result = 0.0;
+	omp_set_num_threads(num_tasks);
+	# pragma omp parallel shared (N, A, result) private (i)
+	{
+		# pragma omp for schedule(static) nowait
+		{
+			for (i = 0; i < N; ++i)
+				#pragma omp atomic
+				result += A[i];
+		}
+	} // end of parallel
+    return result;
+}
+
