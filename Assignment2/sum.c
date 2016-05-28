@@ -33,7 +33,8 @@ double read_timer_ms() {
 void init(REAL *A, int N) {
     int i;
     for (i = 0; i < N; i++) {
-        A[i] = (double) drand48();
+        //A[i] = (double) drand48();
+        A[i] = i;
     }
 }
 
@@ -51,7 +52,7 @@ REAL sum_omp_parallel_for (int N, REAL *A, int num_tasks);
 int main(int argc, char *argv[]) {
     int N = VECTOR_LENGTH;
     int num_tasks = 4;
-    double elapsed; /* for timing */
+    double elapsed_serial, elapsed_para, elapsed_para_for; /* for timing */
     if (argc < 3) {
         fprintf(stderr, "Usage: sum [<N(%d)>] [<#tasks(%d)>]\n", N,num_tasks);
         fprintf(stderr, "\t Example: ./sum %d %d\n", N,num_tasks);
@@ -74,14 +75,14 @@ int main(int argc, char *argv[]) {
 	
 	/* Parallel Run */
     elapsed_para = read_timer();
-    REAL result = sum_omp_parallel(N, A, num_tasks);
+    result = sum_omp_parallel(N, A, num_tasks);
     elapsed_para = (read_timer() - elapsed_para);
 	
 	printf("Serial Result: %f\n", result); // debug
 	
 	/* Parallel For Run */
     elapsed_para_for = read_timer();
-    REAL result = sum_omp_parallel_for(N, A, num_tasks);
+    result = sum_omp_parallel_for(N, A, num_tasks);
     elapsed_para_for = (read_timer() - elapsed_para_for);
 	
 	printf("Serial Result: %f\n", result); // debug
@@ -109,9 +110,10 @@ REAL sum(int N, REAL *A) {
 }
 
 /* Parallel Implemenration */
-REAL sum(int N, REAL *A, int num_tasks) {
+REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 	REAL result = 0.0;
-	#pragma omp parallel shared (N, A, num_tasks, result)
+	omp_set_num_threads(num_tasks);
+  #pragma omp parallel shared (N, A, num_tasks, result)
 	{
 		int i, tid, istart, iend;
 		
@@ -122,24 +124,24 @@ REAL sum(int N, REAL *A, int num_tasks) {
 		for (i = istart; i < iend; ++i) {
 			#pragma omp atomic
 			result += A[i];	/* Must be atomic */
+      printf("result is at: %f by tid %d\n", result, tid);
 		}
 	} // end of parallel
     return result;
 }
 
 /* Parallel For Implemenration */
-REAL sum(int N, REAL *A, int num_tasks) {
+REAL sum_omp_parallel_for (int N, REAL *A, int num_tasks) {
     int i;
     REAL result = 0.0;
 	omp_set_num_threads(num_tasks);
 	# pragma omp parallel shared (N, A, result) private (i)
 	{
 		# pragma omp for schedule(static) nowait
-		{
-			for (i = 0; i < N; ++i)
+			for (i = 0; i < N; ++i) {
 				#pragma omp atomic
 				result += A[i];
-		}
+      }
 	} // end of parallel
     return result;
 }
