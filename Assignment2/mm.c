@@ -1,13 +1,8 @@
-/*
- * Square matrix multiplication
- * A[N][N] * B[N][N] = C[N][N]
- *
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <sys/timeb.h>
 #include <string.h>
+#include <sys/timeb.h>
 
 /* read timer in second */
 double read_timer() {
@@ -24,73 +19,90 @@ double read_timer_ms() {
 }
 
 #define REAL float
+#define VECTOR_LENGTH 512
 
-void init(int N, REAL A[][N]) {
-    int i, j;
-
+/* initialize a vector with random floating point numbers */
+void init(REAL A[], int N) {
+    int i;
     for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            A[i][j] = (REAL) drand48();
-        }
+        A[i] = (double) drand48();
     }
 }
 
-double maxerror(int N, REAL A[][N], REAL B[][N]) {
-    int i, j;
-    double error = 0.0;
+void mm(int N, int K, int M, REAL * A, REAL * B, REAL * C); 
+void mm_parallel_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
+void mm_parallel_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
+void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
+void mm_parallel_for_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
+void mm_parallel_for_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
+void mm_parallel_for_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
 
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            double diff = (A[i][j] - B[i][j]) / A[i][j];
-            if (diff < 0)
-                diff = -diff;
-            if (diff > error)
-                error = diff;
-        }
-    }
-    return error;
-}
-
-void mm(int N, REAL A[][N], REAL B[][N], REAL C[][N]);
-
+/**
+ * To compile: gcc mm.c -fopenmp -o mm
+ */
 int main(int argc, char *argv[]) {
-    int N;
-    int num_tasks = 4; /* 4 is default number of tasks */
-    double elapsed_base;
-    if (argc < 2) {
-        fprintf(stderr, "Usage: mm <n> [<#tasks(%d)>]\n", num_tasks);
-        exit(1);
+    int N = VECTOR_LENGTH;
+    int M = N;
+    int K = N;
+    int num_tasks = 4;
+    double elapsed; /* for timing */
+    if (argc < 5) {
+        fprintf(stderr, "Usage: mm [<N(%d)>] <K(%d) [<M(%d)>] [<#tasks(%d)>]\n", N,K,M,num_tasks);
+        fprintf(stderr, "\t Example: ./mm %d %d %d %d\n", N,K,M,num_tasks);
+    } else {
+    	N = atoi(argv[1]);
+    	K = atoi(argv[2]);
+    	M = atoi(argv[3]);
+    	num_tasks = atoi(argv[4]);
     }
-    N = atoi(argv[1]);
-    if (argc > 2) num_tasks = atoi(argv[2]);
-    REAL A[N][N];
-    REAL B[N][N];
-    REAL C_base[N][N];
+    printf("\tC[%d][%d] = A[%d][%d] * B[%d][%d] with %d tasks\n", N, M, N, K, K, M, num_tasks);
+    REAL * A = malloc(sizeof(REAL)*N*K);
+    REAL * B = malloc(sizeof(REAL)*K*M);
+    REAL * C = malloc(sizeof(REAL)*N*M);
 
     srand48((1 << 12));
-    init(N, A);
-    init(N, B);
+    init(A, N*K);
+    init(B, K*M);
 
     /* example run */
-    elapsed_base = read_timer();
-    mm(N, A, B, C_base);
-    elapsed_base = (read_timer() - elapsed_base);
+    double elapsed_mm = read_timer();
+    mm(N, K, M, A, B, C);
+    elapsed_mm  = (read_timer() - elapsed_mm);
 
+    double elapsed_mm_parallel_row = read_timer();
+    mm_parallel_row(N, K, M, A, B, C, num_tasks);
+    elapsed_mm_parallel_row  = (read_timer() - elapsed_mm_parallel_row);
+
+    /* more runs */
+
+
+    /* you should add the call to each function and time the execution */
     printf("======================================================================================================\n");
-    printf("\tMatrix Multiplication: A[N][N] * B[N][N] = C[N][N], N=%d\n", N);
+    printf("\tC[%d][%d] = A[%d][%d] * B[%d][%d] with %d tasks\n", N, M, N, K, K, M, num_tasks);
     printf("------------------------------------------------------------------------------------------------------\n");
-    printf("Performance:\t\tRuntime (ms)\t MFLOPS \t\tError (compared to base)\n");
+    printf("Performance:\t\t\t\tRuntime (ms)\t MFLOPS \n");
     printf("------------------------------------------------------------------------------------------------------\n");
-    printf("mm:\t\t%4f\t%4f \t\t%g\n", elapsed_base * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_base)), maxerror(N, C_base, C_base));
+    printf("mm:\t\t%4f\t%4f\n",  elapsed_mm * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm));
+    printf("mm_parallel_row:\t\t%4f\t%4f\n",  elapsed_mm_parallel_row * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm_parallel_row));
+    
+    free(A);
+    free(B);
+    free(C);
+    return 0;
 }
 
-void mm(int N, REAL A[][N], REAL B[][N], REAL C[][N]) {
-int i, j, k;
-for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            C[i][j] = 0;
-            for (k = 0; k < N; k++)
-                C[i][j] += A[i][k]*B[k][j];
-        }
-    }
+void mm(int N, int K, int M, REAL * A, REAL * B, REAL * C) {
+    int i, j, w;
+    for (i=0; i<N; i++) 
+        for (j=0; j<M; j++) {
+	    REAL temp = 0.0;
+	    for (w=0; w<K; w++) 
+	        temp += A[i*K+w]*B[w*M+j];
+	    C[i*M+j] = temp;
+	}
+}
+
+/* your implementation of all functions */
+void mm_parallel_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks) {
+
 }

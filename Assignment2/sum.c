@@ -1,5 +1,5 @@
 /*
- * Sum of a*X[N]
+ * Sum of A[N]
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,66 +25,55 @@ double read_timer_ms() {
 #define VECTOR_LENGTH 102400
 
 /* initialize a vector with random floating point numbers */
-void init(REAL A[], int N) {
+void init(REAL *A, int N) {
     int i;
     for (i = 0; i < N; i++) {
         A[i] = (double) drand48();
     }
 }
 
-REAL sum(int N, REAL X[], REAL a);
-REAL sumaxpy(int N, REAL X[], REAL Y[], REAL a); 
+REAL sum (int N, REAL *A);
+REAL sum_omp_parallel (int N, REAL *A, int num_tasks);
+REAL sum_omp_parallel_for (int N, REAL *A, int num_tasks);
 
 int main(int argc, char *argv[]) {
     int N = VECTOR_LENGTH;
+    int num_tasks = 4;
     double elapsed; /* for timing */
-    if (argc < 2) {
-        fprintf(stderr, "Usage: sum <n> (default %d)\n", N);
-        exit(1);
+    if (argc < 3) {
+        fprintf(stderr, "Usage: sum [<N(%d)>] [<#tasks(%d)>]\n", N,num_tasks);
+        fprintf(stderr, "\t Example: ./sum %d %d\n", N,num_tasks);
+    } else {
+    	N = atoi(argv[1]);
+    	num_tasks = atoi(argv[2]);
     }
-    N = atoi(argv[1]);
-    REAL X[N];
-    REAL Y[N];
+
+    REAL *A = (REAL*)malloc(sizeof(REAL)*N);
 
     srand48((1 << 12));
-    init(X, N);
-    init(Y, N);
-    REAL a = 0.1234;
+    init(A, N);
     /* example run */
     elapsed = read_timer();
-    REAL result = sum(N, X, a);
+    REAL result = sum(N, A);
     elapsed = (read_timer() - elapsed);
 
-    double elapsed_2 = read_timer();
-    result = sumaxpy(N, X, Y, a);
-    elapsed_2 = (read_timer() - elapsed_2);
+    /* more runs */
 
     /* you should add the call to each function and time the execution */
     printf("======================================================================================================\n");
-    printf("\tSum %d numbers\n", N);
+    printf("\tSum %d numbers with %d tasks\n", N, num_tasks);
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Performance:\t\tRuntime (ms)\t MFLOPS \n");
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Sum:\t\t\t%4f\t%4f\n", elapsed * 1.0e3, 2*N / (1.0e6 * elapsed));
-    printf("SumAXPY:\t\t\t%4f\t%4f\n", elapsed_2 * 1.0e3, 3*N / (1.0e6 * elapsed_2));
+    free(A);
     return 0;
 }
 
-REAL sum(int N, REAL X[], REAL a) {
+REAL sum(int N, REAL *A) {
     int i;
     REAL result = 0.0;
     for (i = 0; i < N; ++i)
-        result += a * X[i];
-    return result;
-}
-
-/*
- * sum: a*X[]+Y[]
- */
-REAL sumaxpy(int N, REAL X[], REAL Y[], REAL a) {
-    int i;
-    REAL result = 0.0;
-    for (i = 0; i < N; ++i)
-        result += a * X[i] + Y[i];
+        result += A[i];
     return result;
 }
