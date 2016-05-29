@@ -33,8 +33,7 @@ double read_timer_ms() {
 void init(REAL *A, int N) {
     int i;
     for (i = 0; i < N; i++) {
-        //A[i] = (double) drand48();
-        A[i] = i;
+        A[i] = (double) drand48();
     }
 }
 
@@ -45,10 +44,8 @@ REAL sum_omp_parallel_for (int N, REAL *A, int num_tasks);
 
 /* 
  * To compile: gcc sum.c -fopenmp -o sum
- * To run: ./sum
- *
+ * To run: ./sum N num_tasks
  */
-
 int main(int argc, char *argv[]) {
     int N = VECTOR_LENGTH;
     int num_tasks = 4;
@@ -78,14 +75,14 @@ int main(int argc, char *argv[]) {
     result = sum_omp_parallel(N, A, num_tasks);
     elapsed_para = (read_timer() - elapsed_para);
 	
-	printf("Serial Result: %f\n", result); // debug
+	printf("Parallel Result: %f\n", result); // debug
 	
 	/* Parallel For Run */
     elapsed_para_for = read_timer();
     result = sum_omp_parallel_for(N, A, num_tasks);
     elapsed_para_for = (read_timer() - elapsed_para_for);
 	
-	printf("Serial Result: %f\n", result); // debug
+	printf("Parallel For Result: %f\n", result); // debug
 
     /* you should add the call to each function and time the execution */
     printf("======================================================================================================\n");
@@ -93,9 +90,10 @@ int main(int argc, char *argv[]) {
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Performance:\t\tRuntime (ms)\t MFLOPS \n");
     printf("------------------------------------------------------------------------------------------------------\n");
-    printf("Sum:\t\t\t%4f\t%4f\n", elapsed_serial * 1.0e3, 2*N / (1.0e6 * elapsed_serial));
+    printf("Sum Serial:\t\t\t%4f\t%4f\n", 		elapsed_serial * 1.0e3, 	2*N / (1.0e6 * elapsed_serial));
+	printf("Sum Parallel:\t\t\t%4f\t%4f\n", 	elapsed_para * 1.0e3, 		2*N / (1.0e6 * elapsed_para));
+	printf("Sum Parallel For:\t\t\t%4f\t%4f\n", elapsed_para_for * 1.0e3, 	2*N / (1.0e6 * elapsed_para_for));
     
-	
 	free(A);
     return 0;
 }
@@ -113,18 +111,28 @@ REAL sum(int N, REAL *A) {
 REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 	REAL result = 0.0;
 	omp_set_num_threads(num_tasks);
-  #pragma omp parallel shared (N, A, num_tasks, result)
+	
+	/* Determine if task can be evenly distrubutable */
+	int each_task = N / num_tasks;
+	int leftover = N - (each_task * num_tasks);
+	
+  #pragma omp parallel shared (N, A, num_tasks, result, leftover)
 	{
 		int i, tid, istart, iend;
-		
-		tid = omp_get_thread_num();
+		tid = omp_get_thread_num();	
 		istart = tid * (N / num_tasks);
 		iend = (tid + 1) * (N / num_tasks);
 		
 		for (i = istart; i < iend; ++i) {
 			#pragma omp atomic
 			result += A[i];	/* Must be atomic */
-      printf("result is at: %f by tid %d\n", result, tid);
+			printf("result is at: %f by tid %d\n", result, tid);
+		}
+		
+		/* Take care left over */
+		if (tid < leftover) {
+			#pragma omp atomic
+			result += A[N - tid];
 		}
 	} // end of parallel
     return result;
