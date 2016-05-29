@@ -147,7 +147,7 @@ void axpy_omp_parallel_for(int N, REAL Y[], REAL X[], REAL a) {
 
 void axpy_omp_parallel_for_combined(int N, REAL Y[], REAL X[], REAL a) {
     int i;
-#pragma omp parallel for shared (N,X,Y,a) private(i) sched(static)
+#pragma omp parallel for shared (N,X,Y,a) private(i) schedule(static)
     for (i = 0; i < N; ++i)
         Y[i] += a * X[i];
 }
