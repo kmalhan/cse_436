@@ -9,6 +9,8 @@
  // Need to remove all debug printf
  // Current code assumes that N and M are dividable by num_tasks
 
+ // This version is to check the result!
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -37,7 +39,7 @@ void init(REAL A[], int N) {
     int i;
     for (i = 0; i < N; i++) {
         //A[i] = (double) drand48();
-		A[i] = i;
+		    A[i] = i;
     }
 }
 
@@ -77,36 +79,46 @@ int main(int argc, char *argv[]) {
     init(A, N*K);
     init(B, K*M);
 
+    printf("A:\t\t %f %f %f %f %f %f %f %f\n", A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7]);
+    printf("B:\t\t %f %f %f %f %f %f %f %f\n", A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7]);
+
     /* Serial program */
     double elapsed_mm = read_timer();
     mm(N, K, M, A, B, C);
     elapsed_mm  = (read_timer() - elapsed_mm);
+    printf("Serial:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	/* Parallel program */
     double elapsed_mm_parallel_row = read_timer();
     mm_parallel_row(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_row  = (read_timer() - elapsed_mm_parallel_row);
+    printf("Para Row:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_col = read_timer();
     mm_parallel_col(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_col  = (read_timer() - elapsed_mm_parallel_col);
+    printf("Para Col:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_rowcol = read_timer();
     mm_parallel_rowcol(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_rowcol  = (read_timer() - elapsed_mm_parallel_rowcol);
+    printf("Para RC:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	/* Parallel for program */
 	double elapsed_mm_parallel_for_row = read_timer();
    mm_parallel_for_row(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_row  = (read_timer() - elapsed_mm_parallel_for_row);
+    printf("For Row:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_for_col = read_timer();
     mm_parallel_for_col(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_col  = (read_timer() - elapsed_mm_parallel_for_col);
+    printf("For Col:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_for_rowcol = read_timer();
     mm_parallel_for_rowcol(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_rowcol  = (read_timer() - elapsed_mm_parallel_for_rowcol);
+    printf("For RC:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 
 
@@ -116,7 +128,7 @@ int main(int argc, char *argv[]) {
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Performance:\t\t\t\tRuntime (ms)\t MFLOPS \n");
     printf("------------------------------------------------------------------------------------------------------\n");
-    printf("mm:\t\t%4f\t%4f\n",  elapsed_mm * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm));
+    printf("mm:\t\t\t\t%4f\t%4f\n",  elapsed_mm * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm));
     printf("mm_parallel_row:\t\t%4f\t%4f\n",  elapsed_mm_parallel_row * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm_parallel_row));
 	printf("mm_parallel_col:\t\t%4f\t%4f\n",  elapsed_mm_parallel_col * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm_parallel_col));
 	printf("mm_parallel_rowcol:\t\t%4f\t%4f\n",  elapsed_mm_parallel_rowcol * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm_parallel_rowcol));
@@ -146,12 +158,14 @@ void mm(int N, int K, int M, REAL * A, REAL * B, REAL * C) {
 void mm_parallel_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
 	int i, j, w;
   omp_set_num_threads(num_tasks);
-  #pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
+	#pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
 	{
 		int tid, istart, iend;
 		tid = omp_get_thread_num();
-		istart = tid * (N / num_tasks);
+    istart = tid * (N / num_tasks);
 		iend = (tid + 1) * (N / num_tasks);
+
+	  //printf("tid is %d\t, istart is %d\t, iend is %d\n", tid, istart, iend);
 
 		for (i=istart; i<iend; i++) { /* decompose this loop */
 			for (j=0; j<M; j++) {
@@ -190,8 +204,8 @@ void mm_parallel_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_
 /* Parallel Row Column */
 void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
 	int i, j, w;
-  omp_set_num_threads(num_tasks);
-	#pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
+	omp_set_num_threads(num_tasks);
+  #pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
     {
 		int tid, istart, jstart, iend, jend;
 		tid = omp_get_thread_num();
@@ -214,8 +228,8 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
 /* Parallel For Row */
 void mm_parallel_for_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
 	int i, j, w;
-  omp_set_num_threads(num_tasks);
-	#pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
+	omp_set_num_threads(num_tasks);
+  #pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
 	{
 		#pragma omp for schedule(static) nowait
 		for (i=0; i<N; i++) {
@@ -232,8 +246,8 @@ void mm_parallel_for_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int 
 /* Parallel For Column */
 void mm_parallel_for_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
 	int i, j, w;
-  omp_set_num_threads(num_tasks);
-	#pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
+	omp_set_num_threads(num_tasks);
+  #pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
 	{
 		for (i=0; i<N; i++) {
 			#pragma omp for schedule(static) nowait
@@ -250,11 +264,12 @@ void mm_parallel_for_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int 
 /* Parallel For Row Column */
 void mm_parallel_for_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
 	int i, j, w;
-  omp_set_num_threads(num_tasks);
-	#pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
+	omp_set_num_threads(num_tasks);
+  #pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
     {
-		#pragma omp for collapse(2) schedule(static) nowait
+		#pragma omp for schedule(static) nowait
 		for (i=0; i<N; i++) {
+      #pragma omp for schedule(static) nowait
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
 				for (w=0; w<K; w++)
