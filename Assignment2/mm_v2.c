@@ -247,8 +247,9 @@ void mm_parallel_for_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, i
 	int i, j, w;
 	#pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
     {
-		#pragma omp for collapse(2) schedule(static) nowait
+		#pragma omp for schedule(static) nowait
 		for (i=0; i<N; i++) {
+      #pragma omp for schedule(static) nowait
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
 				for (w=0; w<K; w++) 
