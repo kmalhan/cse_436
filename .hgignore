@@ -6,3 +6,4 @@ CMakeFiles/*
 *.cmake
 *Makefile
 build/*
+bin/*

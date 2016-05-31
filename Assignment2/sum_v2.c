@@ -33,7 +33,7 @@ double read_timer_ms() {
 void init(REAL *A, int N) {
     int i;
     for (i = 0; i < N; i++) {
-        A[i] = (double) drand48();
+     A[i] = (double) drand48();
     }
 }
 
@@ -116,7 +116,7 @@ REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 	int each_task = N / num_tasks;
 	int leftover = N - (each_task * num_tasks);
 	
-  #pragma omp parallel shared (N, A, num_tasks, result, leftover)
+  #pragma omp parallel shared (N, A, num_tasks, leftover) reduction(+:result)
 	{
 		int i, tid, istart, iend;
 		tid = omp_get_thread_num();	
@@ -124,14 +124,12 @@ REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 		iend = (tid + 1) * (N / num_tasks);
 		
 		for (i = istart; i < iend; ++i) {
-		  #pragma omp atomic
-			result += A[i];	/* Must be atomic */
+      result += A[i];
 		}
 		
 		/* Take care left over */
 		if (tid < leftover) {
-		#pragma omp atomic
-			result += A[N - tid - 1];
+      result += A[N - tid - 1];
 		}
 	} // end of parallel
     return result;
