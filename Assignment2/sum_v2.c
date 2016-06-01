@@ -6,6 +6,8 @@
  * Sum of A[N]
  */
  
+// Need to remove result checking printf
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -110,7 +112,6 @@ REAL sum(int N, REAL *A) {
 /* Parallel Implemenration */
 REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 	REAL result = 0.0;
-	omp_set_num_threads(num_tasks);
   int partial_result[num_tasks];
 	int t;
 
@@ -118,7 +119,7 @@ REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 	int each_task = N / num_tasks;
 	int leftover = N - (each_task * num_tasks);
   
-  #pragma omp parallel shared (N, A, num_tasks, leftover)
+  #pragma omp parallel shared (N, A, num_tasks, leftover) num_threads(num_tasks)
 	{
 		int i, tid, istart, iend;
     REAL temp;
@@ -137,7 +138,8 @@ REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
     partial_result[tid] = temp;
     
 	} // end of parallel
-  
+ 
+  /* Add result together */ 
   for(t=0; t<num_tasks; t++)
     result += partial_result[t];
 
@@ -148,8 +150,7 @@ REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 REAL sum_omp_parallel_for (int N, REAL *A, int num_tasks) {
     int i;
     REAL result = 0.0;
-	omp_set_num_threads(num_tasks);
-	# pragma omp parallel shared (N, A, result) private (i)
+	# pragma omp parallel shared (N, A, result) private (i) num_threads(num_tasks)
 	{
 		# pragma omp for reduction (+:result) schedule(static) nowait
 			for (i = 0; i < N; ++i) {

@@ -4,6 +4,12 @@
  * 06/08/2016
  */
 
+/* Note 
+ *
+ * This program assumes that size of matrix is dividable
+ * by number of tasks
+ * /
+
  /* Ongoing issues !! */
  // Need to put init code back
  // Need to remove all debug printf
@@ -257,7 +263,6 @@ void mm_parallel_for_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, i
     {
 		#pragma omp for collapse(2) schedule(static) nowait
 		for (i=0; i<N; i++) {
-      //#pragma omp for schedule(static) nowait
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
 				for (w=0; w<K; w++) 
