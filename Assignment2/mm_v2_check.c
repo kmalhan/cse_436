@@ -39,7 +39,7 @@ void init(REAL A[], int N) {
     int i;
     for (i = 0; i < N; i++) {
         //A[i] = (double) drand48();
-		    A[i] = i;
+		    A[i] = i*2+5;
     }
 }
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     init(B, K*M);
 
     printf("A:\t\t %f %f %f %f %f %f %f %f\n", A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7]);
-    printf("B:\t\t %f %f %f %f %f %f %f %f\n", A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7]);
+    printf("B:\t\t %f %f %f %f %f %f %f %f\n", B[0], B[1], B[2], B[3], B[4], B[5], B[6], B[7]);
 
     /* Serial program */
     double elapsed_mm = read_timer();
@@ -266,10 +266,10 @@ void mm_parallel_for_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, i
 	int i, j, w;
 	omp_set_num_threads(num_tasks);
   #pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
-    {
-		#pragma omp for schedule(static) nowait
+  {
+		#pragma omp for collapse(2) schedule(static) nowait
 		for (i=0; i<N; i++) {
-      #pragma omp for schedule(static) nowait
+     //INVALID #pragma omp for schedule(static) nowait
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
 				for (w=0; w<K; w++)

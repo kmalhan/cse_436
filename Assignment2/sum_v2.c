@@ -111,28 +111,37 @@ REAL sum(int N, REAL *A) {
 REAL sum_omp_parallel (int N, REAL *A, int num_tasks) {
 	REAL result = 0.0;
 	omp_set_num_threads(num_tasks);
-	
+  int partial_result[num_tasks];
+	int t;
+
 	/* Determine if task can be evenly distrubutable */
 	int each_task = N / num_tasks;
 	int leftover = N - (each_task * num_tasks);
-	
-  #pragma omp parallel shared (N, A, num_tasks, leftover) reduction(+:result)
+  
+  #pragma omp parallel shared (N, A, num_tasks, leftover)
 	{
 		int i, tid, istart, iend;
+    REAL temp;
 		tid = omp_get_thread_num();	
 		istart = tid * (N / num_tasks);
 		iend = (tid + 1) * (N / num_tasks);
 		
 		for (i = istart; i < iend; ++i) {
-      result += A[i];
+      temp += A[i];
 		}
 		
 		/* Take care left over */
 		if (tid < leftover) {
-      result += A[N - tid - 1];
+      temp += A[N - tid - 1];
 		}
+    partial_result[tid] = temp;
+    
 	} // end of parallel
-    return result;
+  
+  for(t=0; t<num_tasks; t++)
+    result += partial_result[t];
+
+  return result;
 }
 
 /* Parallel For Implemenration */
