@@ -203,34 +203,30 @@ void mm_parallel_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_
 
 /* Parallel Row Column */
 void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
-  int task1, task2;
-  task2 = num_tasks / 2;
-  task1 = num_tasks - task2;
+    int i, j, w;
+    int task1, task2;
+    /* Calculate amount of work for each thread */
+    task1 = num_tasks / 2;
+    task2 = num_tasks / task1;
 
-  #pragma omp parallel shared (N, K, M, A, B, C, task1, task2) num_threads(task1)
-  {
-		int tid1, istart, iend, i;
-		tid1 = omp_get_thread_num();
-		istart = tid1 * (N / task1);
-		iend = (tid1 + 1) * (N / task1);
+    #pragma omp parallel shared (N, K, M, A, B, C, task1, task2) private (i, j, w) num_thread(num_tasks)
+    {
+        int tid, istart, jstart, iend, jend;
+        tid = omp_get_thread_num();
+        istart = tid * (N / task1);
+        iend = (tid + 1) * (N / task1);
+        jstart = tid * (M / task2);
+        jend = (tid + 1) * (M / task2);
 
-    for (i=istart; i<iend; i++) { /* decompose this loop */
-      #pragma omp paralled shared (N, K, M, A, B, C, task2, i) num_threads(task2)
-      {
-          int j, w, jstart, jend, tid2;
-          tid2 = omp_get_thread_num();
-          jstart = tid2 * (M / task2);
-		      jend = (tid2 + 1) * (M / task2);
-    			for (j=jstart; j<jend; j++) { /* decompose this loop */
-    				REAL temp = 0.0;
-    				for (w=0; w<K; w++)
-    					temp += A[i*K+w]*B[w*M+j];
-    				C[i*M+j] = temp;
-            printf("C[%d] has %f computed by %d\n", (i*M+j), temp, tid2);
-    			}
+        for (i=istart; i<iend; i++) { /* decompose this loop */
+            for (j=jstart; j<jend; j++) { /* decompose this loop */
+                REAL temp = 0.0;
+                for (w=0; w<K; w++)
+                    temp += A[i*K+w]*B[w*M+j];
+                C[i*M+j] = temp;
+            }
         }
-		}
-	} /* end of parallel */
+    } /* end of parallel */
 }
 
 /* Parallel For Row */
