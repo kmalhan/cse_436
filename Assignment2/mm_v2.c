@@ -214,8 +214,8 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
         tid = omp_get_thread_num();
         istart = (tid/task_c) * (N/task_r);
         iend = (tid/task_c + 1) * (N/task_r);
-        jstart = (tid/task_r) * (M/task_c);
-        jend = (tid/task_r + 1) * (M/task_c);
+        jstart = (tid%task_r) * (M/task_c);
+        jend = (tid%task_r + 1) * (M/task_c);
 
         for (i=istart; i<iend; i++) { /* decompose this loop */
             for (j=jstart; j<jend; j++) { /* decompose this loop */

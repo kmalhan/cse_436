@@ -221,8 +221,8 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
 
         istart = (tid/task_c) * (N/task_r);
         iend = (tid/task_c + 1) * (N/task_r);
-        jstart = (tid/task_r) * (M/task_c);
-        jend = (tid/task_r + 1) * (M/task_c);
+        jstart = (tid%task_r) * (M/task_c);
+        jend = (tid%task_r + 1) * (M/task_c);
 
         for (i=istart; i<iend; i++) { /* decompose this loop */
             for (j=jstart; j<jend; j++) { /* decompose this loop */
@@ -231,6 +231,7 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
                     temp += A[i*K+w]*B[w*M+j];
                 }
                 C[i*M+j] = temp;
+                printf("tid %d at C[%d] = %f\n", tid, (i*M+j), temp);
             }
         }
     } /* end of parallel */
