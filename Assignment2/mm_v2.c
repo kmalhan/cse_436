@@ -217,7 +217,7 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
         jstart = (tid/task_r) * (M/task_c);
         jend = (tid/task_r + 1) * (M/task_c);
 
-        for (i=0; i<2; i++) { /* decompose this loop */
+        for (i=istart; i<iend; i++) { /* decompose this loop */
             for (j=jstart; j<jend; j++) { /* decompose this loop */
                   REAL temp = 0.0;
                 for (w=0; w<K; w++) {
