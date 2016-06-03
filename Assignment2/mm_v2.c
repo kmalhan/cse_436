@@ -212,11 +212,11 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
     {
         int tid, istart, jstart, iend, jend;
         tid = omp_get_thread_num();
-        istart = (tid/task_c) * (N/task_r);
-        iend = (tid/task_c + 1) * (N/task_r);
-        jstart = (tid%task_r) * (M/task_c);
-        jend = (tid%task_r + 1) * (M/task_c);
-
+        istart = ((tid/task_c) * (N/task_r)%N);
+        iend = ((tid/task_c + 1) * (N/task_r)%N);
+        jstart = ((tid%task_r) * (M/task_c)%M);
+        jend = ((tid%task_r + 1) * (M/task_c)%M);
+        
         for (i=istart; i<iend; i++) { /* decompose this loop */
             for (j=jstart; j<jend; j++) { /* decompose this loop */
                   REAL temp = 0.0;
