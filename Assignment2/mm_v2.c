@@ -4,7 +4,7 @@
  * 06/08/2016
  */
 
-/* Note 
+/* Note
  *
  * This program assumes that size of matrix is dividable
  * by number of tasks
@@ -14,7 +14,7 @@
  // Need to put init code back
  // Need to remove all debug printf
  // Current code assumes that N and M are dividable by num_tasks
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -48,7 +48,7 @@ void init(REAL A[], int N) {
 }
 
 /* Function Prototypes */
-void mm(int N, int K, int M, REAL * A, REAL * B, REAL * C); 
+void mm(int N, int K, int M, REAL * A, REAL * B, REAL * C);
 void mm_parallel_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
 void mm_parallel_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
 void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks);
@@ -92,24 +92,24 @@ int main(int argc, char *argv[]) {
     double elapsed_mm_parallel_row = read_timer();
     mm_parallel_row(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_row  = (read_timer() - elapsed_mm_parallel_row);
-	
+
 	double elapsed_mm_parallel_col = read_timer();
     mm_parallel_col(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_col  = (read_timer() - elapsed_mm_parallel_col);
-	
+
 	double elapsed_mm_parallel_rowcol = read_timer();
     mm_parallel_rowcol(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_rowcol  = (read_timer() - elapsed_mm_parallel_rowcol);
-	
+
 	/* Parallel for program */
 	double elapsed_mm_parallel_for_row = read_timer();
    mm_parallel_for_row(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_row  = (read_timer() - elapsed_mm_parallel_for_row);
-	
+
 	double elapsed_mm_parallel_for_col = read_timer();
     mm_parallel_for_col(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_col  = (read_timer() - elapsed_mm_parallel_for_col);
-	
+
 	double elapsed_mm_parallel_for_rowcol = read_timer();
     mm_parallel_for_rowcol(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_rowcol  = (read_timer() - elapsed_mm_parallel_for_rowcol);
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 	printf("mm_parallel_for_row:\t\t%4f\t%4f\n",  elapsed_mm_parallel_for_row * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm_parallel_for_row));
 	printf("mm_parallel_for_col:\t\t%4f\t%4f\n",  elapsed_mm_parallel_for_col * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm_parallel_for_col));
 	printf("mm_parallel_for_rowcol:\t\t%4f\t%4f\n",  elapsed_mm_parallel_for_rowcol * 1.0e3, M*N*K / (1.0e6 *  elapsed_mm_parallel_for_rowcol));
-    
+
     free(A);
     free(B);
     free(C);
@@ -139,10 +139,10 @@ int main(int argc, char *argv[]) {
 /* Serial */
 void mm(int N, int K, int M, REAL * A, REAL * B, REAL * C) {
     int i, j, w;
-    for (i=0; i<N; i++) 
+    for (i=0; i<N; i++)
         for (j=0; j<M; j++) {
 	    REAL temp = 0.0;
-	    for (w=0; w<K; w++) 
+	    for (w=0; w<K; w++)
 	        temp += A[i*K+w]*B[w*M+j];
 	    C[i*M+j] = temp;
 	}
@@ -151,7 +151,7 @@ void mm(int N, int K, int M, REAL * A, REAL * B, REAL * C) {
 /* Parallel Row */
 void mm_parallel_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
 	int i, j, w;
-  omp_set_num_threads(num_tasks); 
+  omp_set_num_threads(num_tasks);
 	#pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
 	{
 		int tid, istart, iend;
@@ -160,7 +160,7 @@ void mm_parallel_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_
 		iend = (tid + 1) * (N / num_tasks);
 
 	  //printf("tid is %d\t, istart is %d\t, iend is %d\n", tid, istart, iend);
-	
+
 		for (i=istart; i<iend; i++) { /* decompose this loop */
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
@@ -170,7 +170,7 @@ void mm_parallel_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_
 			}
 		}
 	}/* end of parallel */
-	
+
 }
 
 /* Parallel Column */
@@ -183,7 +183,7 @@ void mm_parallel_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_
 		tid = omp_get_thread_num();
 		jstart = tid * (M / num_tasks);
 		jend = (tid + 1) * (M / num_tasks);
-		
+
 		for (i=0; i<N; i++) {
 			for (j=jstart; j<jend; j++) { /* decompose this loop */
 				REAL temp = 0.0;
@@ -191,32 +191,42 @@ void mm_parallel_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_
 					temp += A[i*K+w]*B[w*M+j];
 				C[i*M+j] = temp;
 			}
-		}	
+		}
 	} /* end of parallel */
 }
 
 /* Parallel Row Column */
 void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
-	int i, j, w;
-	omp_set_num_threads(num_tasks);
-  #pragma omp parallel shared (N, K, M, A, B, C, num_tasks) private (i, j, w)
+    int i, j, w;
+    int task_r, task_c;
+    /* Calculate amount of work for each thread */
+    if (num_tasks == 1){
+      task_r = 1;
+      task_c = 1;
+    } else {
+      task_r = num_tasks / 2;
+      task_c = num_tasks / task_r;
+    }
+
+    #pragma omp parallel shared (N, K, M, A, B, C, task_r, task_c) private (i, j, w) num_threads(num_tasks)
     {
-		int tid, istart, jstart, iend, jend;
-		tid = omp_get_thread_num();
-		istart = tid * (N / num_tasks);
-		iend = (tid + 1) * (N / num_tasks);
-		jstart = tid * (M / num_tasks);
-		jend = (tid + 1) * (M / num_tasks);
-		
-		for (i=istart; i<iend; i++) { /* decompose this loop */
-			for (j=jstart; j<jend; j++) { /* decompose this loop */
-				REAL temp = 0.0;
-				for (w=0; w<K; w++) 
-					temp += A[i*K+w]*B[w*M+j];
-				C[i*M+j] = temp;
-			}
-		}
-	} /* end of parallel */
+        int tid, istart, jstart, iend, jend;
+        tid = omp_get_thread_num();
+        istart = (tid/task_c) * (N/task_r);
+        iend = (tid/task_c + 1) * (N/task_r);
+        jstart = (tid/task_r) * (M/task_c);
+        jend = (tid/task_r + 1) * (M/task_c);
+
+        for (i=0; i<2; i++) { /* decompose this loop */
+            for (j=jstart; j<jend; j++) { /* decompose this loop */
+                  REAL temp = 0.0;
+                for (w=0; w<K; w++) {
+                    temp += A[i*K+w]*B[w*M+j];
+                }
+                C[i*M+j] = temp;
+            }
+        }
+    } /* end of parallel */
 }
 
 /* Parallel For Row */
@@ -229,7 +239,7 @@ void mm_parallel_for_row(int N, int K, int M, REAL * A, REAL * B, REAL * C, int 
 		for (i=0; i<N; i++) {
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
-				for (w=0; w<K; w++) 
+				for (w=0; w<K; w++)
 					temp += A[i*K+w]*B[w*M+j];
 				C[i*M+j] = temp;
 			}
@@ -247,7 +257,7 @@ void mm_parallel_for_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int 
 			#pragma omp for schedule(static) nowait
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
-				for (w=0; w<K; w++) 
+				for (w=0; w<K; w++)
 					temp += A[i*K+w]*B[w*M+j];
 				C[i*M+j] = temp;
 			}
@@ -265,11 +275,10 @@ void mm_parallel_for_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, i
 		for (i=0; i<N; i++) {
 			for (j=0; j<M; j++) {
 				REAL temp = 0.0;
-				for (w=0; w<K; w++) 
+				for (w=0; w<K; w++)
 					temp += A[i*K+w]*B[w*M+j];
 				C[i*M+j] = temp;
 			}
 		}
 	} /* end of parallel */
 }
-
