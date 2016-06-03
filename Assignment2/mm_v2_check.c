@@ -214,31 +214,23 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
       task_c = num_tasks / task_r;
     }
 
-    printf("Task1: %d, Task2: %d\n", task_r, task_c); 
-    printf("task dividing reached!\n");
-    
     #pragma omp parallel shared (N, K, M, A, B, C, task_r, task_c) private (i, j, w) num_threads(num_tasks)
     {
         int tid, istart, jstart, iend, jend;
         tid = omp_get_thread_num();
+
         istart = (tid/task_c) * (N/task_r);
         iend = (tid/task_c + 1) * (N/task_r);
         jstart = (tid/task_r) * (M/task_c);
         jend = (tid/task_r + 1) * (M/task_c);
-        
-        printf("\n");
-        printf("tid %d, istart %d, iend %d, jstart %d, jend %d\n", tid, istart, iend, jstart, jend);
 
         for (i=0; i<2; i++) { /* decompose this loop */
             for (j=jstart; j<jend; j++) { /* decompose this loop */
-                  printf("tid: %d at i=%d, j=%d\n", tid, i, j);
                   REAL temp = 0.0;
                 for (w=0; w<K; w++) {
                     temp += A[i*K+w]*B[w*M+j];
-                    printf("tid %d with w=%d, has A[%d]=%f and B[%d]=%f\n", tid, w, (i*K+w), A[i*K+w], (w*M+j), B[w*M+j]);
                 }
                 C[i*M+j] = temp;
-                printf("tid %d is printing %f at c[%d]\n", tid, temp, (i*M+j));
             }
         }
     } /* end of parallel */
