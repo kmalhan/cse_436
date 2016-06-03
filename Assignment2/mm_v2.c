@@ -212,14 +212,12 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
     {
         int tid, istart, jstart, iend, jend;
         tid = omp_get_thread_num();
-        istart = ((tid/task_c) * (N/task_r));
-        if (istart > N) {istart -= N;}
-        iend = ((tid/task_c + 1) * (N/task_r));
-        if (iend > N) {iend -= N;}
-        jstart = ((tid%task_r) * (M/task_c));
-        if (jstart > M) {jstart -= M;}
-        jend = ((tid%task_r + 1) * (M/task_c));
-        if (jend > M) {jend -= M;}
+        istart = ((tid/task_c) * (N/task_r)%N);
+        iend = ((tid/task_c + 1) * (N/task_r)%N);
+        if (iend == 0) {iend = N;}
+        jstart = ((tid%task_r) * (M/task_c)%M);
+        jend = ((tid%task_r + 1) * (M/task_c)%M);
+        if (jend == M) {jend = M;}
         
         for (i=istart; i<iend; i++) { /* decompose this loop */
             for (j=jstart; j<jend; j++) { /* decompose this loop */
