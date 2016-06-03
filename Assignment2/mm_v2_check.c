@@ -84,20 +84,20 @@ int main(int argc, char *argv[]) {
 
     /* Serial program */
     double elapsed_mm = read_timer();
-    mm(N, K, M, A, B, C);
+    //mm(N, K, M, A, B, C);
     elapsed_mm  = (read_timer() - elapsed_mm);
-    printf("Serial:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
+    //printf("Serial:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	/* Parallel program */
     double elapsed_mm_parallel_row = read_timer();
-    mm_parallel_row(N, K, M, A, B, C, num_tasks);
+    //mm_parallel_row(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_row  = (read_timer() - elapsed_mm_parallel_row);
-    printf("Para Row:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
+    //printf("Para Row:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_col = read_timer();
-    mm_parallel_col(N, K, M, A, B, C, num_tasks);
+    //mm_parallel_col(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_col  = (read_timer() - elapsed_mm_parallel_col);
-    printf("Para Col:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
+    //printf("Para Col:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_rowcol = read_timer();
     mm_parallel_rowcol(N, K, M, A, B, C, num_tasks);
@@ -106,14 +106,14 @@ int main(int argc, char *argv[]) {
 
 	/* Parallel for program */
 	double elapsed_mm_parallel_for_row = read_timer();
-   mm_parallel_for_row(N, K, M, A, B, C, num_tasks);
+   //mm_parallel_for_row(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_row  = (read_timer() - elapsed_mm_parallel_for_row);
-    printf("For Row:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
+    //printf("For Row:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_for_col = read_timer();
-    mm_parallel_for_col(N, K, M, A, B, C, num_tasks);
+    //mm_parallel_for_col(N, K, M, A, B, C, num_tasks);
     elapsed_mm_parallel_for_col  = (read_timer() - elapsed_mm_parallel_for_col);
-    printf("For Col:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
+    //printf("For Col:\t\t %f %f %f %f %f %f %f %f\n", C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]);
 
 	double elapsed_mm_parallel_for_rowcol = read_timer();
     mm_parallel_for_rowcol(N, K, M, A, B, C, num_tasks);
@@ -204,26 +204,41 @@ void mm_parallel_col(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_
 /* Parallel Row Column */
 void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int num_tasks){
     int i, j, w;
-    int task1, task2;
+    int task_r, task_c;
     /* Calculate amount of work for each thread */
-    task1 = num_tasks / 2;
-    task2 = num_tasks / task1;
+    if (num_tasks == 1){
+      task_r = 1;
+      task_c = 1;
+    } else {
+      task_r = num_tasks / 2;
+      task_c = num_tasks / task_r;
+    }
 
-    #pragma omp parallel shared (N, K, M, A, B, C, task1, task2) private (i, j, w) num_thread(num_tasks)
+    printf("Task1: %d, Task2: %d\n", task_r, task_c); 
+    printf("task dividing reached!\n");
+    
+    #pragma omp parallel shared (N, K, M, A, B, C, task_r, task_c) private (i, j, w) num_threads(num_tasks)
     {
         int tid, istart, jstart, iend, jend;
         tid = omp_get_thread_num();
-        istart = tid * (N / task1);
-        iend = (tid + 1) * (N / task1);
-        jstart = tid * (M / task2);
-        jend = (tid + 1) * (M / task2);
+        istart = (tid/task_c) * (N/task_r);
+        iend = (tid/task_c + 1) * (N/task_r);
+        jstart = (tid/task_r) * (M/task_c);
+        jend = (tid/task_r + 1) * (M/task_c);
+        
+        printf("\n");
+        printf("tid %d, istart %d, iend %d, jstart %d, jend %d\n", tid, istart, iend, jstart, jend);
 
-        for (i=istart; i<iend; i++) { /* decompose this loop */
+        for (i=0; i<2; i++) { /* decompose this loop */
             for (j=jstart; j<jend; j++) { /* decompose this loop */
-                REAL temp = 0.0;
-                for (w=0; w<K; w++)
+                  printf("tid: %d at i=%d, j=%d\n", tid, i, j);
+                  REAL temp = 0.0;
+                for (w=0; w<K; w++) {
                     temp += A[i*K+w]*B[w*M+j];
+                    printf("tid %d with w=%d, has A[%d]=%f and B[%d]=%f\n", tid, w, (i*K+w), A[i*K+w], (w*M+j), B[w*M+j]);
+                }
                 C[i*M+j] = temp;
+                printf("tid %d is printing %f at c[%d]\n", tid, temp, (i*M+j));
             }
         }
     } /* end of parallel */
