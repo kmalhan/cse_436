@@ -207,17 +207,24 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
       task_r = num_tasks / 2;
       task_c = num_tasks / task_r;
     }
-
-    #pragma omp parallel shared (N, K, M, A, B, C, task_r, task_c) private (i, j, w) num_threads(num_tasks)
+    
+    omp_set_nested(1);
+    
+    #pragma omp parallel shared (N, K, M, A, B, C, task_r, task_c) private (i, j, w) num_threads(task_r)
     {
-        int tid, istart, jstart, iend, jend;
-        tid = omp_get_thread_num();
-        istart = ((tid/task_c) * (N/task_r)%N);
-        iend = ((tid/task_c + 1) * (N/task_r)%N);
-        if (iend == 0) {iend = N;}
-        jstart = ((tid%task_r) * (M/task_c)%M);
-        jend = ((tid%task_r + 1) * (M/task_c)%M);
-        if (jend == 0) {jend = M;}
+        int tid1, istart, iend;
+        tid1 = omp_get_thread_num();
+        istart = (tid1/task_c) * (N/task_r);
+        iend = (tid1/task_c + 1) * (N/task_r);
+        
+        for (i=istart; i<iend; i++) { /* decompose this loop */
+        
+        #pragma omp parallel shared (N, M, K, A, B, C, task_r, task_c, i) private (j, w) num_threads(task_c)
+        { 
+        int tid2, jstart, jend;
+        tid2 = omp_get_thread_num();
+        jstart = (tid2/task_r) * (M/task_c);
+        jend = (tid2/task_r + 1) * (M/task_c);
         
         //printf("tid %d perform i: %d to %d, j: %d to %d\n", tid, istart, iend, jstart, jend);
 
@@ -230,7 +237,9 @@ void mm_parallel_rowcol(int N, int K, int M, REAL * A, REAL * B, REAL * C, int n
                 C[i*M+j] = temp;
             }
         }
+      }
     } /* end of parallel */
+}
 }
 
 /* Parallel For Row */
