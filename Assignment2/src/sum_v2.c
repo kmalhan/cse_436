@@ -6,8 +6,6 @@
  * Sum of A[N]
  */
  
-// Need to remove result checking printf
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -70,22 +68,16 @@ int main(int argc, char *argv[]) {
     REAL result = sum(N, A);
     elapsed_serial = (read_timer() - elapsed_serial);
 	
-	printf("Serial Result:\t\t %f\n", result); // debug
-	
 	/* Parallel Run */
     elapsed_para = read_timer();
     result = sum_omp_parallel(N, A, num_tasks);
     elapsed_para = (read_timer() - elapsed_para);
-	
-	printf("Parallel Result:\t %f\n", result); // debug
 	
 	/* Parallel For Run */
     elapsed_para_for = read_timer();
     result = sum_omp_parallel_for(N, A, num_tasks);
     elapsed_para_for = (read_timer() - elapsed_para_for);
 	
-	printf("Parallel For Result:\t %f\n", result); // debug
-
     /* you should add the call to each function and time the execution */
     printf("======================================================================================================\n");
     printf("\tSum %d numbers with %d tasks\n", N, num_tasks);
@@ -152,7 +144,7 @@ REAL sum_omp_parallel_for (int N, REAL *A, int num_tasks) {
     REAL result = 0.0;
 	# pragma omp parallel shared (N, A, result) private (i) num_threads(num_tasks)
 	{
-		# pragma omp for reduction (+:result) schedule(static) nowait
+		# pragma omp for schedule(runtime) reduction (+:result) nowait
 			for (i = 0; i < N; ++i) {
 				result += A[i];
       }
