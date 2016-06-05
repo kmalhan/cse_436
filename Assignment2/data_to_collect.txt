@@ -1,1 +1,4 @@
-:q
+For sum.c
+
+1. Change schedule into runtime
+2. Run code with different scheduling method
