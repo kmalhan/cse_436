@@ -1,4 +1,22 @@
-For sum.c
+Test 1:
 
-1. Change schedule into runtime
-2. Run code with different scheduling method
+With sum.m [schedule(static)], n=10,000,000 (10M) with thread 1, 2, 4, 8.
+
+Test 2:
+
+With mm.m, 1024 x 1024 with thread 1, 2, 4, 8.
+
+Test 3:
+
+With sum.m with n=10,000,000 (10M) do following with environment variable.
+
+static
+static, 2000
+static, 200
+static, 20
+dynamic, 2000
+dynamic, 200
+dynamic, 20
+guided, 200000
+
+Once done, generate excel chart, and write report.
