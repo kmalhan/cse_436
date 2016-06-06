@@ -1,5 +1,5 @@
 
-Assignment2 Test Run
+Assignment2 Test Run (I will use this result)
 
 ==Platform that code is running==
 Linux lennon.secs.oakland.edu 2.6.32-504.30.3.el6.x86_64 #1 SMP Tue Jul 14 11:18:03 CDT 2015 x86_64 x86_64 x86_64 GNU/Linux
