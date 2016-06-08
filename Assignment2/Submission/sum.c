@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     printf("Performance:\t\tRuntime (ms)\t MFLOPS \n");
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("Sum Serial:\t\t\t%4f\t%4f\n", 		elapsed_serial * 1.0e3, 	2*N / (1.0e6 * elapsed_serial));
-	  printf("Sum Parallel:\t\t\t%4f\t%4f\n", 	elapsed_para * 1.0e3, 		2*N / (1.0e6 * elapsed_para));
+	  printf("Sum Parallel:\t\t\t%4f\t%4f\n", 	elapsed_para * 1.0e3, 		(2*N+num_tasks) / (1.0e6 * elapsed_para));
 	  printf("Sum Parallel For:\t\t%4f\t%4f\n", elapsed_para_for * 1.0e3, 	2*N / (1.0e6 * elapsed_para_for));
     
 	free(A);
