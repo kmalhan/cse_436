@@ -97,13 +97,14 @@ int main(int argc, char *argv[]) {
     N = atoi(argv[1]);
     if (argc > 2) num_tasks = atoi(argv[2]);
 	// modified to incorporate 5 array (originally 4)
-    REAL * heap_buffer = (REAL*)malloc(sizeof(REAL)*N*N*5); /* we use 5 matrix in this example */
+    REAL * heap_buffer = (REAL*)malloc(sizeof(REAL)*N*N*7); /* we use 5 matrix in this example */
     /* below is a cast from memory buffer to a 2-d row-major array */
     REAL *A = heap_buffer;
     REAL *B = &heap_buffer[N*N];
     REAL *C_base = &heap_buffer[2*N*N];
     REAL *C_openmp = &heap_buffer[3*N*N];
-	REAL *C_cuda = &heap_buffer[4*N*N];		// added
+	  REAL *C_cuda_v1 = &heap_buffer[4*N*N];		// added
+	  REAL *C_cuda_v2 = &heap_buffer[5*N*N];		// added
 
     srand48((1 << 12));
     init(N, N, A);
@@ -125,13 +126,13 @@ int main(int argc, char *argv[]) {
     cudaSetDevice(0); 
     /* call and time for matmul_cuda_v1_vanilla(int N, REAL *A, REAL *B, REAL *C); */
 	elapsed_cuda_v1 = read_timer();
-	matmul_cuda_v1_vanilla(N, A, B, C_cuda);
+	matmul_cuda_v1_vanilla(N, A, B, C_cuda_v1);
 	elapsed_cuda_v1 = (read_timer() - elapsed_cuda_v1);
 	
     /* call and time for matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C); */
-	//elapsed_cuda_v2 = read_timer();
-	//matmul_cuda_v1_shmem(N, A, B, C_cuda);
-	//elapsed_cuda_v2 = (read_timer() - elapsed_cuda_v2);	
+	elapsed_cuda_v2 = read_timer();
+	matmul_cuda_v1_shmem(N, A, B, C_cuda_v2);
+	elapsed_cuda_v2 = (read_timer() - elapsed_cuda_v2);	
 	
     /* call and time for matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C); */
 	//elapsed_cuda_v3 = read_timer();
@@ -147,8 +148,8 @@ int main(int argc, char *argv[]) {
     printf("matmul_openmp:\t\t%4f\t%4f \t\t%g\n", elapsed_openmp * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_openmp)), maxerror(N, N, C_base, C_openmp));
     /* put other printf statements for outputing results for GPU execution */
         
-    printf("matmul_global:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v1  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v1 )), maxerror(N, N, C_base, C_cuda));
-
+    printf("matmul_global:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v1  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v1 )), maxerror(N, N, C_base, C_cuda_v1));
+    printf("matmul_shared:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v2  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v2 )), maxerror(N, N, C_base, C_cuda_v2));
 
     free(heap_buffer);
 	/* Reset device and exit */
