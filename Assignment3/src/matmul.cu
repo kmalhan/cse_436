@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     REAL *B = &heap_buffer[N*N];
     REAL *C_base = &heap_buffer[2*N*N];
     REAL *C_openmp = &heap_buffer[3*N*N];
-	READ *C_cuda = &heap_buffer[4*N*N];		// added
+	REAL *C_cuda = &heap_buffer[4*N*N];		// added
 
     srand48((1 << 12));
     init(N, N, A);
@@ -124,9 +124,9 @@ int main(int argc, char *argv[]) {
      */
     cudaSetDevice(0); 
     /* call and time for matmul_cuda_v1_vanilla(int N, REAL *A, REAL *B, REAL *C); */
-	//elapsed_cuda_v1 = read_timer();
-	//matmul_cuda_v1_vanilla(N, A, B, C_cuda);
-	//elapsed_cuda_v1 = (read_timer() - elapsed_cuda_v1);
+	elapsed_cuda_v1 = read_timer();
+	matmul_cuda_v1_vanilla(N, A, B, C_cuda);
+	elapsed_cuda_v1 = (read_timer() - elapsed_cuda_v1);
 	
     /* call and time for matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C); */
 	//elapsed_cuda_v2 = read_timer();
@@ -146,6 +146,10 @@ int main(int argc, char *argv[]) {
     printf("matmul_base:\t\t%4f\t%4f \t\t%g\n", elapsed_base * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_base)), maxerror(N, N, C_base, C_base));
     printf("matmul_openmp:\t\t%4f\t%4f \t\t%g\n", elapsed_openmp * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_openmp)), maxerror(N, N, C_base, C_openmp));
     /* put other printf statements for outputing results for GPU execution */
+        
+    printf("matmul_global:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v1  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v1 )), maxerror(N, N, C_base, C_cuda));
+
+
     free(heap_buffer);
 	/* Reset device and exit */
 	cudaDeviceReset();
@@ -279,10 +283,10 @@ __global__ void matmul_global_kernel(int N, REAL* A, REAL* B, REAL* C){
 	
 	// Perform calculation
 	for (i=0; i<N; i++)
-		temp += d_A[row*N+i] * d_B[i*N+col];
+		temp += A[row*N+i] * B[i*N+col];
 	
 	// Write result to d_C
-	d_C[row*N+col] = temp;
+	C[row*N+col] = temp;
 }
 
 /*
@@ -313,13 +317,13 @@ __global__ void matmul_shared_kernel(int N, REAL* A, REAL* B, REAL* C){
 		
 		// Matrix A
 		if ( row<N && (i*BLOCK_SIZE+tx)<N )
-			Asub[ty][tx] = d_A[row*N+(i*BLOCKSIZE+tx)];
+			Asub[ty][tx] = A[row*N+(i*BLOCK_SIZE+tx)];
 		else
 			Asub[ty][tx] = 0.0;
 		
 		// Matrix B
 		if ( col<N && (i*BLOCK_SIZE+ty)<N )
-			Bsub[ty][tx] = d_B[(i*BLOCKSIZE+ty)*N+col];
+			Bsub[ty][tx] = B[(i*BLOCK_SIZE+ty)*N+col];
 		else
 			Bsub[ty][tx] = 0.0;
 		
@@ -330,10 +334,10 @@ __global__ void matmul_shared_kernel(int N, REAL* A, REAL* B, REAL* C){
 		for (j=0; j<BLOCK_SIZE; j++)
 			temp += Asub[ty][j] * Bsub[j][tx];
 		// Synchronize all threads (make sure calculateion is ended)
-		__synctrheads();
+		__syncthreads();
 	}
 	
 	// If threads are within elements of d_C, put result to d_C
 	if ( row<N && col<N )
-		d_C[row*N+col] = temp;
+		C[row*N+col] = temp;
 }
