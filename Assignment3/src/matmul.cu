@@ -7,11 +7,9 @@
  *	A[N][N] * B[N][N] = C[N][N]
  */
 
-// NOTE: This is version v0.3
+// NOTE: This is version v0.4
 // NOTE: This code should be executed on yoko.secs.oakland.edu
 // REVIEW: Delete all debug printf if exists
-// REVIEW: Fix initialization if modified
-// REVIEW: Check if err checking is necessary for cuda related code
 
 /* Include Files */
 #include <stdio.h>
@@ -137,9 +135,9 @@ int main(int argc, char *argv[]) {
 
     // TODO: Test of cublas run
     /* call and time for matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C); */
-    //elapsed_cuda_v3 = read_timer();
-    //matmul_cuda_v1_cublas(N, A, B, C_cuda_v3);
-    //elapsed_cuda_v3 = (read_timer() - elapsed_cuda_v3);
+    elapsed_cuda_v3 = read_timer();
+    matmul_cuda_v1_cublas(N, A, B, C_cuda_v3);
+    elapsed_cuda_v3 = (read_timer() - elapsed_cuda_v3);
 
     printf("======================================================================================================\n");
     printf("Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=%d, %d threads/tasks\n", N, num_tasks);
@@ -272,6 +270,39 @@ void matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C) {
  */
 void matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C) {
 
+  // Size of matrix
+  size_t size = sizeof(REAL)*N*N;
+
+  // Allocate GPU memory for matrix A, B, C
+  REAL* d_A;
+  cudaMalloc((void**)&d_A, size);
+  REAL* d_B;
+  cudaMalloc((void**)&d_B, size);
+  REAL* d_C;
+  cudaMalloc((void**)&d_C, size);
+
+  // Initialize cuBLAS handle
+  cublasHandle_t handle;
+  cublasCreate(&handle);
+
+  // Copy data of matrix A and B
+  cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
+
+  // REVIEW: Check if this operation is correct!!
+  // use cublasSgemm as data is REAL (float)
+  REAL alpha = 1.0f;
+  REAL beta = 1.0f;
+  // (handle, transa, transb, m, n, k, *alpha, *A, lda, *B, ldb, *beta, *C, ldc)
+  cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, N, N, &alpha, d_A, N, d_B, N, &beta, d_C, N);
+
+  // Copy the result back to CPU
+  cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
+
+  // Free GPU memory
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
 }
 
 /*
