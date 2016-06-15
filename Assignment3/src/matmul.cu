@@ -303,6 +303,9 @@ void matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C) {
   cudaFree(d_A);
   cudaFree(d_B);
   cudaFree(d_C);
+  
+  // Destory cuBLAS handle
+  cublasDestroy(handle);
 }
 
 /*
