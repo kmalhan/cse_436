@@ -7,9 +7,7 @@
  *	A[N][N] * B[N][N] = C[N][N]
  */
 
-// NOTE: This is version v0.4
-// NOTE: This code should be executed on yoko.secs.oakland.edu
-// REVIEW: Delete all debug printf if exists
+// This is version v1.0
 
 /* Include Files */
 #include <stdio.h>
@@ -126,17 +124,19 @@ int main(int argc, char *argv[]) {
     cudaSetDevice(0);
 
     /* call and time for matmul_cuda_v1_vanilla(int N, REAL *A, REAL *B, REAL *C); */
+    matmul_cuda_v1_vanilla(N, A, B, C_cuda_v1); // warm up
     elapsed_cuda_v1 = read_timer();
     matmul_cuda_v1_vanilla(N, A, B, C_cuda_v1);
     elapsed_cuda_v1 = (read_timer() - elapsed_cuda_v1);
 
     /* call and time for matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C); */
+    matmul_cuda_v1_shmem(N, A, B, C_cuda_v2); // warm up
     elapsed_cuda_v2 = read_timer();
     matmul_cuda_v1_shmem(N, A, B, C_cuda_v2);
     elapsed_cuda_v2 = (read_timer() - elapsed_cuda_v2);
 
-    // TODO: Test of cublas run
     /* call and time for matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C); */
+    matmul_cuda_v1_cublas(N, A, B, C_cuda_v3); // warm up
     elapsed_cuda_v3 = read_timer();
     matmul_cuda_v1_cublas(N, A, B, C_cuda_v3);
     elapsed_cuda_v3 = (read_timer() - elapsed_cuda_v3);
@@ -266,7 +266,8 @@ void matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C) {
   cudaFree(d_C);
 }
 
-// TODO: Complete function using cublas
+// REVIEW: Implementation of cuBLAS function
+// REVIEW: Use cudaMemcpy or cublasSetMatrix (row/col major)
 /*
  * call to sgemm of cublas library
  */
@@ -305,7 +306,7 @@ void matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C) {
   cudaFree(d_A);
   cudaFree(d_B);
   cudaFree(d_C);
-  
+
   // Destory cuBLAS handle
   cublasDestroy(handle);
 }
