@@ -19,6 +19,8 @@
 #include <string.h>
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
+// For cuBLAS function
+#include "cublas_v2.h"
 
 /* read timer in second */
 double read_timer() {
