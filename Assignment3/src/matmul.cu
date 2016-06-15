@@ -6,15 +6,13 @@
  *	Rectangular matrix multiplication
  *	A[N][N] * B[N][N] = C[N][N]
  */
- 
- // This is version v0.1
- 
- // Ongoing issue!
- // This code should be executed on yoko.secs.oakland.edu
- // Delete all debug printf if exists
- // Fix initialization if modified
- // Check if err checking is necessary for cuda related code
- 
+
+// NOTE: This is version v0.3
+// NOTE: This code should be executed on yoko.secs.oakland.edu
+// REVIEW: Delete all debug printf if exists
+// REVIEW: Fix initialization if modified
+// REVIEW: Check if err checking is necessary for cuda related code
+
 /* Include Files */
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,15 +94,17 @@ int main(int argc, char *argv[]) {
     }
     N = atoi(argv[1]);
     if (argc > 2) num_tasks = atoi(argv[2]);
-	// modified to incorporate 5 array (originally 4)
+    // modified to incorporate 5 array (originally 4)
     REAL * heap_buffer = (REAL*)malloc(sizeof(REAL)*N*N*7); /* we use 5 matrix in this example */
     /* below is a cast from memory buffer to a 2-d row-major array */
     REAL *A = heap_buffer;
     REAL *B = &heap_buffer[N*N];
     REAL *C_base = &heap_buffer[2*N*N];
     REAL *C_openmp = &heap_buffer[3*N*N];
-	  REAL *C_cuda_v1 = &heap_buffer[4*N*N];		// added
-	  REAL *C_cuda_v2 = &heap_buffer[5*N*N];		// added
+    REAL *C_cuda_v1 = &heap_buffer[4*N*N];		// added
+    REAL *C_cuda_v2 = &heap_buffer[5*N*N];		// added
+    REAL *C_cuda_v3 = &heap_buffer[6*N*N];		// added
+    // REVIEW: If it is necessary to have separate matrix for all cuda function
 
     srand48((1 << 12));
     init(N, N, A);
@@ -120,25 +120,27 @@ int main(int argc, char *argv[]) {
     elapsed_openmp = (read_timer() - elapsed_openmp);
 
     /* call and timing for the three CUDA versions */
-    /* there are three devices you can use on gpu.secs.oakland.edu, 0, 2, 3. 
+    /* there are three devices you can use on gpu.secs.oakland.edu, 0, 2, 3.
      * 1 is a graphical card with less computation capability.
      */
-    cudaSetDevice(0); 
+    cudaSetDevice(0);
+
     /* call and time for matmul_cuda_v1_vanilla(int N, REAL *A, REAL *B, REAL *C); */
-	elapsed_cuda_v1 = read_timer();
-	matmul_cuda_v1_vanilla(N, A, B, C_cuda_v1);
-	elapsed_cuda_v1 = (read_timer() - elapsed_cuda_v1);
-	
+    elapsed_cuda_v1 = read_timer();
+    matmul_cuda_v1_vanilla(N, A, B, C_cuda_v1);
+    elapsed_cuda_v1 = (read_timer() - elapsed_cuda_v1);
+
     /* call and time for matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C); */
-	elapsed_cuda_v2 = read_timer();
-	matmul_cuda_v1_shmem(N, A, B, C_cuda_v2);
-	elapsed_cuda_v2 = (read_timer() - elapsed_cuda_v2);	
-	
+    elapsed_cuda_v2 = read_timer();
+    matmul_cuda_v1_shmem(N, A, B, C_cuda_v2);
+    elapsed_cuda_v2 = (read_timer() - elapsed_cuda_v2);
+
+    // TODO: Test of cublas run
     /* call and time for matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C); */
-	//elapsed_cuda_v3 = read_timer();
-	//matmul_cuda_v1_cublas(N, A, B, C_cuda);
-	//elapsed_cuda_v3 = (read_timer() - elapsed_cuda_v3);	
-	
+    //elapsed_cuda_v3 = read_timer();
+    //matmul_cuda_v1_cublas(N, A, B, C_cuda_v3);
+    //elapsed_cuda_v3 = (read_timer() - elapsed_cuda_v3);
+
     printf("======================================================================================================\n");
     printf("Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=%d, %d threads/tasks\n", N, num_tasks);
     printf("------------------------------------------------------------------------------------------------------\n");
@@ -146,14 +148,16 @@ int main(int argc, char *argv[]) {
     printf("------------------------------------------------------------------------------------------------------\n");
     printf("matmul_base:\t\t%4f\t%4f \t\t%g\n", elapsed_base * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_base)), maxerror(N, N, C_base, C_base));
     printf("matmul_openmp:\t\t%4f\t%4f \t\t%g\n", elapsed_openmp * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_openmp)), maxerror(N, N, C_base, C_openmp));
+
     /* put other printf statements for outputing results for GPU execution */
-        
     printf("matmul_global:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v1  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v1 )), maxerror(N, N, C_base, C_cuda_v1));
     printf("matmul_shared:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v2  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v2 )), maxerror(N, N, C_base, C_cuda_v2));
+    printf("matmul_cublas\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v3  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v3 )), maxerror(N, N, C_base, C_cuda_v3));
 
     free(heap_buffer);
-	/* Reset device and exit */
-	cudaDeviceReset();
+
+    /* Reset device and exit */
+    cudaDeviceReset();
     return 0;
 }
 
@@ -190,38 +194,38 @@ void matmul_openmp(int N, REAL *A, REAL *B, REAL *C, int num_tasks) {
  * call to kernel that uses GPU global memory
  */
 void matmul_cuda_v1_vanilla(int N, REAL *A, REAL *B, REAL *C) {
-	
-	// Calculate allocation size for GPU memory
-	size_t size = sizeof(REAL)*N*N;
-	
-	// Allocate GPU memory for A
-	REAL* d_A = NULL;
-	cudaMalloc((void**)&d_A, size);
-	
-	// Allocate GPU memory for B
-	REAL* d_B = NULL;
-	cudaMalloc((void**)&d_B, size);	
-	
-	// Allocate GPU memory for C
-	REAL* d_C = NULL;
-	cudaMalloc((void**)&d_C, size);	
-	
-	// Copy A and B from Host to Device
-	cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
-	
-	// Launch matrix multiplication with GPU global memory kernel
-	dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
-	dim3 dimGrid( N/dimBlock.x, N/dimBlock.y );
-	matmul_global_kernel <<< dimGrid, dimBlock >>>(N, d_A, d_B, d_C);
-	
-	// Read Result back to CPU memory
-	cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
-	
-	// Free device memory
-	cudaFree(d_A);
-	cudaFree(d_B);
-	cudaFree(d_C);
+
+  // Calculate allocation size for GPU memory
+  size_t size = sizeof(REAL)*N*N;
+
+  // Allocate GPU memory for A
+  REAL* d_A = NULL;
+  cudaMalloc((void**)&d_A, size);
+
+  // Allocate GPU memory for B
+  REAL* d_B = NULL;
+  cudaMalloc((void**)&d_B, size);
+
+  // Allocate GPU memory for C
+  REAL* d_C = NULL;
+  cudaMalloc((void**)&d_C, size);
+
+  // Copy A and B from Host to Device
+  cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
+
+  // Launch matrix multiplication with GPU global memory kernel
+  dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+  dim3 dimGrid( N/dimBlock.x, N/dimBlock.y );
+  matmul_global_kernel <<< dimGrid, dimBlock >>>(N, d_A, d_B, d_C);
+
+  // Read Result back to CPU memory
+  cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
+
+  // Free device memory
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
 }
 
 /*
@@ -229,116 +233,117 @@ void matmul_cuda_v1_vanilla(int N, REAL *A, REAL *B, REAL *C) {
  */
 void matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C) {
 
-	// Calculate allocation size for GPU memory
-	size_t size = sizeof(REAL)*N*N;
-	
-	// Allocate GPU memory for A
-	REAL* d_A = NULL;
-	cudaMalloc((void**)&d_A, size);
-	
-	// Allocate GPU memory for B
-	REAL* d_B = NULL;
-	cudaMalloc((void**)&d_B, size);	
-	
-	// Allocate GPU memory for C
-	REAL* d_C = NULL;
-	cudaMalloc((void**)&d_C, size);	
-	
-	// Copy A and B from Host to Device
-	cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
-	
-	// Launch matrix multiplication with GPU global memory kernel
-	dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
-	dim3 dimGrid( N/dimBlock.x, N/dimBlock.y );
-	matmul_shared_kernel <<< dimGrid, dimBlock >>>(N, d_A, d_B, d_C);
-	
-	// Read Result back to CPU memory
-	cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
-	
-	// Free device memory
-	cudaFree(d_A);
-	cudaFree(d_B);
-	cudaFree(d_C);
+  // Calculate allocation size for GPU memory
+  size_t size = sizeof(REAL)*N*N;
+
+  // Allocate GPU memory for A
+  REAL* d_A = NULL;
+  cudaMalloc((void**)&d_A, size);
+
+  // Allocate GPU memory for B
+  REAL* d_B = NULL;
+  cudaMalloc((void**)&d_B, size);
+
+  // Allocate GPU memory for C
+  REAL* d_C = NULL;
+  cudaMalloc((void**)&d_C, size);
+
+  // Copy A and B from Host to Device
+  cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
+
+  // Launch matrix multiplication with GPU global memory kernel
+  dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+  dim3 dimGrid( N/dimBlock.x, N/dimBlock.y );
+  matmul_shared_kernel <<< dimGrid, dimBlock >>>(N, d_A, d_B, d_C);
+
+  // Read Result back to CPU memory
+  cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
+
+  // Free device memory
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
 }
 
+// TODO: Complete function using cublas
 /*
- * call to sgemm of cublas library 
+ * call to sgemm of cublas library
  */
 void matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C) {
 
 }
 
 /*
- * CUDA kernel function with GPU global memory 
+ * CUDA kernel function with GPU global memory
  */
 __global__ void matmul_global_kernel(int N, REAL* A, REAL* B, REAL* C){
-	
-	// Local variable
-	REAL temp = 0.0;
-	int i;
-	
-	// Calculate thread location in terms of row and col
-	int row = blockIdx.y * blockDim.y + threadIdx.y;
-	int col = blockIdx.x * blockDim.x + threadIdx.x;
-	
-	// Perform calculation
-	for (i=0; i<N; i++)
-		temp += A[row*N+i] * B[i*N+col];
-	
-	// Write result to d_C
-	C[row*N+col] = temp;
+
+  // Local variable
+  REAL temp = 0.0;
+  int i;
+
+  // Calculate thread location in terms of row and col
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+  // Perform calculation
+  for (i=0; i<N; i++)
+    temp += A[row*N+i] * B[i*N+col];
+
+    // Write result to C
+    C[row*N+col] = temp;
 }
 
 /*
  * CUDA kernel function with GPU shared memory
  */
 __global__ void matmul_shared_kernel(int N, REAL* A, REAL* B, REAL* C){
-	
-	// Local variable
-	REAL temp = 0.0;
-	int i, j;
-	
-	// Determine thread location
-	int tx = threadIdx.x;
-	int ty = threadIdx.y;
-	
-	// Determine row and column
-	int row = blockIdx.y * BLOCK_SIZE + ty;
-	int col = blockIdx.x * BLOCK_SIZE + tx;
-	
-	// Shared memory to store sub-matrix
-	__shared__ REAL Asub[BLOCK_SIZE][BLOCK_SIZE];
-	__shared__ REAL Bsub[BLOCK_SIZE][BLOCK_SIZE];
-	
-	// Copy matrix into shared memory sub-matrix (note: <=)
-	// When you create sub-matrix, it is important to make sure
-	// threads within matrix is performing the calculation
-	for (i=0; i<=(N/BLOCK_SIZE); i++) {
-		
-		// Matrix A
-		if ( row<N && (i*BLOCK_SIZE+tx)<N )
-			Asub[ty][tx] = A[row*N+(i*BLOCK_SIZE+tx)];
-		else
-			Asub[ty][tx] = 0.0;
-		
-		// Matrix B
-		if ( col<N && (i*BLOCK_SIZE+ty)<N )
-			Bsub[ty][tx] = B[(i*BLOCK_SIZE+ty)*N+col];
-		else
-			Bsub[ty][tx] = 0.0;
-		
-		// Synchronize all threads (make sure sub-matrix is developed)
-		__syncthreads();
-	
-		// Calculate each element of d_C
-		for (j=0; j<BLOCK_SIZE; j++)
-			temp += Asub[ty][j] * Bsub[j][tx];
-		// Synchronize all threads (make sure calculateion is ended)
-		__syncthreads();
-	}
-	
-	// If threads are within elements of d_C, put result to d_C
-	if ( row<N && col<N )
-		C[row*N+col] = temp;
+
+  // Local variable
+  REAL temp = 0.0;
+  int i, j;
+
+  // Determine thread location
+  int tx = threadIdx.x;
+  int ty = threadIdx.y;
+
+  // Determine row and column
+  int row = blockIdx.y * BLOCK_SIZE + ty;
+  int col = blockIdx.x * BLOCK_SIZE + tx;
+
+  // Shared memory to store sub-matrix
+  __shared__ REAL Asub[BLOCK_SIZE][BLOCK_SIZE];
+  __shared__ REAL Bsub[BLOCK_SIZE][BLOCK_SIZE];
+
+  // Copy matrix into shared memory sub-matrix REVIEW: <= is correct?
+  // When you create sub-matrix, it is important to make sure
+  // threads within matrix is performing the calculation
+  for (i=0; i<=(N/BLOCK_SIZE); i++) {
+
+      // Matrix A
+      if ( row<N && (i*BLOCK_SIZE+tx)<N )
+        Asub[ty][tx] = A[row*N+(i*BLOCK_SIZE+tx)];
+      else
+        Asub[ty][tx] = 0.0;
+
+      // Matrix B
+      if ( col<N && (i*BLOCK_SIZE+ty)<N )
+        Bsub[ty][tx] = B[(i*BLOCK_SIZE+ty)*N+col];
+      else
+        Bsub[ty][tx] = 0.0;
+
+      // Synchronize all threads (make sure sub-matrix is developed)
+      __syncthreads();
+
+      // Calculate each element of d_C
+      for (j=0; j<BLOCK_SIZE; j++)
+        temp += Asub[ty][j] * Bsub[j][tx];
+      // Synchronize all threads (make sure calculateion is ended)
+      __syncthreads();
+  }
+
+  // If threads are within elements of d_C, put result to d_C
+  if ( row<N && col<N )
+    C[row*N+col] = temp;
 }
