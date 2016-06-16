@@ -1,0 +1,271 @@
+This file contains collected result for assignment 3
+
+Run 1 =======================  N = 512, Core = 56 ===================================================
+
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=512, 56 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:		Runtime (ms)	 MFLOPS 		Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:		869.999886	308.546542 		0
+matmul_openmp:		69.000006	3890.368605 		0
+matmul_global:		4.999876	53688.422433 		3.50824e-07
+matmul_shared:		3.999949	67109.728011 		3.50824e-07
+matmul_cublas		2.000093	134211.456293 		3.50824e-07
+
+==38415== NVPROF is profiling process 38415, command: bin/matmul 512 56
+==38415== Profiling application: bin/matmul 512 56
+==38415== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 41.21%  6.0796ms         2  3.0398ms  2.9939ms  3.0857ms  matmul_global_kernel(int, float*, float*, float*)
+ 27.02%  3.9871ms        14  284.80us  1.1520us  332.26us  [CUDA memcpy HtoD]
+ 15.91%  2.3470ms         2  1.1735ms  1.1726ms  1.1744ms  matmul_shared_kernel(int, float*, float*, float*)
+ 12.80%  1.8886ms         6  314.77us  314.47us  315.01us  [CUDA memcpy DtoH]
+  3.06%  451.40us         2  225.70us  225.63us  225.76us  sgemm_sm35_ldg_tt_128x8x256x16x32
+
+==38415== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 42.62%  341.20ms        24  14.217ms  8.6750us  338.16ms  cudaMalloc
+ 30.38%  243.19ms        26  9.3535ms     579ns  241.02ms  cudaFree
+ 24.55%  196.51ms         1  196.51ms  196.51ms  196.51ms  cudaDeviceReset
+  2.31%  18.487ms        20  924.35us  12.471us  3.8565ms  cudaMemcpy
+  0.08%  661.99us       166  3.9870us     235ns  155.13us  cuDeviceGetAttribute
+  0.03%  207.64us         6  34.606us  16.258us  51.633us  cudaLaunch
+  0.01%  93.359us         2  46.679us  37.975us  55.384us  cuDeviceGetName
+  0.01%  89.574us         2  44.787us  38.560us  51.014us  cuDeviceTotalMem
+  0.00%  25.150us         1  25.150us  25.150us  25.150us  cudaSetDevice
+  0.00%  21.329us        32     666ns     412ns  4.1800us  cudaEventCreateWithFlags
+  0.00%  21.297us        44     484ns     140ns  5.3400us  cudaSetupArgument
+  0.00%  15.399us        32     481ns     382ns  1.5050us  cudaEventDestroy
+  0.00%  14.294us         4  3.5730us  2.6170us  5.1980us  cudaThreadSynchronize
+  0.00%  8.0450us        20     402ns     249ns  1.9780us  cudaDeviceGetAttribute
+  0.00%  7.4990us         6  1.2490us     661ns  1.9600us  cudaConfigureCall
+  0.00%  6.7070us         3  2.2350us     670ns  4.4440us  cuDeviceGetCount
+  0.00%  4.4710us         2  2.2350us     739ns  3.7320us  cudaGetDevice
+  0.00%  1.7130us         3     571ns     403ns     663ns  cuDeviceGet
+  0.00%     877ns         1     877ns     877ns     877ns  cuInit
+  0.00%     765ns         1     765ns     765ns     765ns  cuDriverGetVersion
+  0.00%     753ns         2     376ns     334ns     419ns  cudaGetLastError
+
+Run2 =================== N = 1024, Core = 56 ========================================================
+
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=1024, 56 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:		Runtime (ms)	 MFLOPS 		Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:		6735.000134	318.854284 		0
+matmul_openmp:		379.999876	5651.274602 		0
+matmul_global:		29.000044	74051.048257 		3.57041e-07
+matmul_shared:		14.999866	143166.850856 		3.57041e-07
+matmul_cublas		6.000042	357911.438240 		3.57041e-07
+
+==38555== NVPROF is profiling process 38555, command: bin/matmul 1024 56
+==38555== Profiling application: bin/matmul 1024 56
+==38555== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 50.72%  47.059ms         2  23.530ms  23.490ms  23.570ms  matmul_global_kernel(int, float*, float*, float*)
+ 20.48%  18.998ms         2  9.4989ms  9.4968ms  9.5010ms  matmul_shared_kernel(int, float*, float*, float*)
+ 17.18%  15.937ms        14  1.1384ms  1.1200us  1.3285ms  [CUDA memcpy HtoD]
+  9.00%  8.3463ms         6  1.3911ms  1.2557ms  1.5802ms  [CUDA memcpy DtoH]
+  2.62%  2.4337ms         2  1.2168ms  1.2163ms  1.2174ms  sgemm_sm35_ldg_tt_128x8x256x16x32
+
+==38555== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 41.93%  331.29ms        24  13.804ms  8.0590us  328.58ms  cudaMalloc
+ 24.05%  190.03ms         1  190.03ms  190.03ms  190.03ms  cudaDeviceReset
+ 21.73%  171.72ms        26  6.6044ms     587ns  169.82ms  cudaFree
+ 12.17%  96.193ms        20  4.8097ms  12.264us  26.138ms  cudaMemcpy
+  0.06%  461.97us       166  2.7820us     122ns  113.07us  cuDeviceGetAttribute
+  0.02%  168.15us         6  28.025us  15.918us  50.903us  cudaLaunch
+  0.01%  61.839us         2  30.919us  27.231us  34.608us  cuDeviceTotalMem
+  0.01%  58.064us         2  29.032us  21.386us  36.678us  cuDeviceGetName
+  0.00%  21.939us        44     498ns     142ns  5.7530us  cudaSetupArgument
+  0.00%  21.373us        32     667ns     422ns  4.4700us  cudaEventCreateWithFlags
+  0.00%  15.624us        32     488ns     380ns  1.3940us  cudaEventDestroy
+  0.00%  14.473us         4  3.6180us  2.4710us  5.0670us  cudaThreadSynchronize
+  0.00%  12.530us         1  12.530us  12.530us  12.530us  cudaSetDevice
+  0.00%  8.3480us        20     417ns     250ns  2.4360us  cudaDeviceGetAttribute
+  0.00%  7.1550us         6  1.1920us     730ns  2.1600us  cudaConfigureCall
+  0.00%  4.2880us         2  2.1440us     795ns  3.4930us  cudaGetDevice
+  0.00%  3.1170us         3  1.0390us     476ns  2.0070us  cuDeviceGetCount
+  0.00%     984ns         3     328ns     216ns     462ns  cuDeviceGet
+  0.00%     742ns         1     742ns     742ns     742ns  cuDriverGetVersion
+  0.00%     694ns         1     694ns     694ns     694ns  cuInit
+  0.00%     598ns         2     299ns     285ns     313ns  cudaGetLastError
+
+
+Run3 ============= N = 2048, Core = 56 ========================================================
+
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=2048, 56 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:		Runtime (ms)	 MFLOPS 		Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:		52742.000103	325.734124 		0
+matmul_openmp:		2740.999937	6267.737898 		0
+matmul_global:		203.999996	84215.046594 		3.5738e-07
+matmul_shared:		92.000008	186737.693036 		3.5738e-07
+matmul_cublas		26.000023	660763.617705 		3.5738e-07
+
+==38697== NVPROF is profiling process 38697, command: bin/matmul 2048 56
+==38697== Profiling application: bin/matmul 2048 56
+==38697== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 58.44%  375.20ms         2  187.60ms  187.60ms  187.60ms  matmul_global_kernel(int, float*, float*, float*)
+ 23.58%  151.37ms         2  75.686ms  75.682ms  75.690ms  matmul_shared_kernel(int, float*, float*, float*)
+  9.93%  63.749ms        14  4.5535ms  1.1200us  5.3169ms  [CUDA memcpy HtoD]
+  5.64%  36.220ms         6  6.0366ms  5.0423ms  7.7783ms  [CUDA memcpy DtoH]
+  2.41%  15.478ms         2  7.7392ms  7.7385ms  7.7400ms  sgemm_sm35_ldg_tt_128x8x256x16x32
+
+==38697== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 48.17%  646.13ms        20  32.307ms  29.440us  195.05ms  cudaMemcpy
+ 24.52%  328.85ms        24  13.702ms  19.560us  325.84ms  cudaMalloc
+ 14.20%  190.46ms         1  190.46ms  190.46ms  190.46ms  cudaDeviceReset
+ 13.04%  174.91ms        26  6.7272ms     704ns  172.74ms  cudaFree
+  0.03%  389.48us       166  2.3460us     109ns  87.421us  cuDeviceGetAttribute
+  0.01%  186.27us         6  31.045us  17.085us  50.794us  cudaLaunch
+  0.00%  52.475us         2  26.237us  26.128us  26.347us  cuDeviceTotalMem
+  0.00%  50.017us        32  1.5630us  1.0700us  7.9060us  cudaEventCreateWithFlags
+  0.00%  47.000us         2  23.500us  20.066us  26.934us  cuDeviceGetName
+  0.00%  41.074us        32  1.2830us     860ns  8.7380us  cudaEventDestroy
+  0.00%  28.381us        44     645ns     139ns  6.6460us  cudaSetupArgument
+  0.00%  27.415us         4  6.8530us  5.2350us  9.9400us  cudaThreadSynchronize
+  0.00%  13.766us        20     688ns     250ns  3.8660us  cudaDeviceGetAttribute
+  0.00%  11.577us         1  11.577us  11.577us  11.577us  cudaSetDevice
+  0.00%  7.4330us         6  1.2380us     607ns  2.0710us  cudaConfigureCall
+  0.00%  7.2020us         2  3.6010us     932ns  6.2700us  cudaGetDevice
+  0.00%  2.8100us         3     936ns     348ns  2.1100us  cuDeviceGetCount
+  0.00%  1.6710us         2     835ns     754ns     917ns  cudaGetLastError
+  0.00%     738ns         1     738ns     738ns     738ns  cuInit
+  0.00%     719ns         1     719ns     719ns     719ns  cuDriverGetVersion
+  0.00%     597ns         3     199ns     144ns     247ns  cuDeviceGet
+
+
+=============================================================================================================
+========= DEVICE INFORMATION OF YOKO.SECS.OAKLAND.EDU ===============================================
+
+From "lscpu"
+
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                56
+On-line CPU(s) list:   0-55
+Thread(s) per core:    2
+Core(s) per socket:    14
+Socket(s):             2
+NUMA node(s):          2
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 63
+Model name:            Intel(R) Xeon(R) CPU E5-2683 v3 @ 2.00GHz
+Stepping:              2
+CPU MHz:               1200.000
+BogoMIPS:              4003.51
+Virtualization:        VT-x
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              256K
+L3 cache:              35840K
+NUMA node0 CPU(s):     0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54
+NUMA node1 CPU(s):     1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55
+
+
+Memory Size from "free -h" and "free"
+
+              total        used        free      shared  buff/cache   available
+Mem:            94G        1.2G         91G        9.4M        986M         92G
+Swap:          4.0G          0B        4.0G
+
+              total        used        free      shared  buff/cache   available
+Mem:       98719004     1241212    96467436        9620     1010356    96937792
+Swap:       4194300           0     4194300
+
+From nvidia-smi
+
+Wed Jun 15 23:46:16 2016       
++------------------------------------------------------+                       
+| NVIDIA-SMI 352.93     Driver Version: 352.93         |                       
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Tesla K20Xm         Off  | 0000:03:00.0     Off |                    0 |
+| N/A   31C    P0    59W / 235W |     13MiB /  5759MiB |     98%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID  Type  Process name                               Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+
+GPU: NVIDIA Tesla K20Xm
+Memory: 5759 MB (5.8GB)
+
+deviceQueryDrv Program stored in my folder
+
+[deviceQueryDrv] starting...
+
+CUDA Device Query (Driver API) statically linked version
+There is 1 device supporting CUDA
+
+Device 0: "Tesla K20Xm"
+  CUDA Driver Version:                           7.5
+  CUDA Capability Major/Minor version number:    3.5
+  Total amount of global memory:                 5760 MBytes (6039339008 bytes)
+MapSMtoCores SM 3.5 is undefined (please update to the latest SDK)!
+MapSMtoCores SM 3.5 is undefined (please update to the latest SDK)!
+  (14) Multiprocessors x ( -1) CUDA Cores/MP:   -14 CUDA Cores
+  GPU Clock rate:                                732 MHz (0.73 GHz)
+  Memory Clock rate:                             2600 Mhz
+  Memory Bus Width:                              384-bit
+  L2 Cache Size:                                 1572864 bytes
+  Max Texture Dimension Sizes                    1D=(65536) 2D=(65536,65536) 3D=(4096,4096,4096)
+  Max Layered Texture Size (dim) x layers        1D=(16384) x 2048, 2D=(16384,16384) x 2048
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per multiprocessor:  2048
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
+  Texture alignment:                             512 bytes
+  Maximum memory pitch:                          2147483647 bytes
+  Concurrent copy and execution:                 Yes with 2 copy engine(s)
+  Run time limit on kernels:                     No
+  Integrated GPU sharing Host Memory:            No
+  Support host page-locked memory mapping:       Yes
+  Concurrent kernel execution:                   Yes
+  Alignment requirement for Surfaces:            Yes
+  Device has ECC support enabled:                Yes
+  Device is using TCC driver mode:               No
+  Device supports Unified Addressing (UVA):      Yes
+  Device PCI Bus ID / PCI location ID:           3 / 0
+  Compute Mode:
+
+     < Default (multiple host threads can use ::cudaSetDevice() with device simultaneously) >
+[deviceQueryDrv] test results...
+PASSED
+
+> exiting in 3 seconds: 3...2...1...done!
+
+======================================================================================================
+
+GCC version
+
+gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-4)
+Copyright (C) 2015 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+NVCC version
+
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2015 NVIDIA Corporation
+Built on Tue_Aug_11_14:27:32_CDT_2015
+Cuda compilation tools, release 7.5, V7.5.17
