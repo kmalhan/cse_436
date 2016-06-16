@@ -166,6 +166,7 @@ int main(int argc, char *argv[]) {
     printf("matmul_cublas\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v3  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v3 )), maxerror(N, N, C_base, C_trans));
 
     free(heap_buffer);
+    free(C_trans);
 
     /* Reset device and exit */
     cudaDeviceReset();
