@@ -7,8 +7,7 @@
  *	A[N][N] * B[N][N] = C[N][N]
  */
 
-// This is version v1.1
-// This is the correct version
+// This is version v1.0
 
 /* Include Files */
 #include <stdio.h>
@@ -141,16 +140,6 @@ int main(int argc, char *argv[]) {
     elapsed_cuda_v3 = read_timer();
     matmul_cuda_v1_cublas(N, A, B, C_cuda_v3);
     elapsed_cuda_v3 = (read_timer() - elapsed_cuda_v3);
-    
-    // Transpose result back to row major for third function
-    REAL* C_trans = (REAL*)malloc(sizeof(REAL)*N*N);
-    int i, j;
-    
-    for (i=0; i<N; i++){
-      for (j=0; j<N; j++){
-        C_trans[i*N+j] = C_cuda_v3[j*N+i];
-      }
-    }
 
     printf("======================================================================================================\n");
     printf("Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=%d, %d threads/tasks\n", N, num_tasks);
@@ -163,7 +152,7 @@ int main(int argc, char *argv[]) {
     /* put other printf statements for outputing results for GPU execution */
     printf("matmul_global:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v1  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v1 )), maxerror(N, N, C_base, C_cuda_v1));
     printf("matmul_shared:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v2  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v2 )), maxerror(N, N, C_base, C_cuda_v2));
-    printf("matmul_cublas\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v3  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v3 )), maxerror(N, N, C_base, C_trans));
+    printf("matmul_cublas\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v3  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v3 )), maxerror(N, N, C_base, C_cuda_v3));
 
     free(heap_buffer);
 
@@ -299,19 +288,19 @@ void matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C) {
   cublasHandle_t handle;
   cublasCreate(&handle);
 
-  // Set Matrix A and B
-  cublasSetMatrix(N, N, sizeof(REAL), A, N, d_A, N);
-  cublasSetMatrix(N, N, sizeof(REAL), B, N, d_B, N);
+  // Copy data of matrix A and B
+  cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
 
   // REVIEW: Check if this operation is correct!!
   // use cublasSgemm as data is REAL (float)
   REAL alpha = 1.0f;
-  REAL beta = 0.0f;
+  REAL beta = 1.0f;
   // (handle, transa, transb, m, n, k, *alpha, *A, lda, *B, ldb, *beta, *C, ldc)
-  cublasSgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, N, N, N, &alpha, d_A, N, d_B, N, &beta, d_C, N);
+  cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, N, N, &alpha, d_A, N, d_B, N, &beta, d_C, N);
 
-  // Get C
-  cublasGetMatrix(N, N, sizeof(REAL), d_C, N, C, N);
+  // Copy the result back to CPU
+  cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
 
   // Free GPU memory
   cudaFree(d_A);
