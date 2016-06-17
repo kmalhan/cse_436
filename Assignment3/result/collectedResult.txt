@@ -269,3 +269,51 @@ nvcc: NVIDIA (R) Cuda compiler driver
 Copyright (c) 2005-2015 NVIDIA Corporation
 Built on Tue_Aug_11_14:27:32_CDT_2015
 Cuda compilation tools, release 7.5, V7.5.17
+
+Run4 N = 256 Core = 56
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=256, 56 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:		Runtime (ms)	 MFLOPS 		Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:		132.000208	254.199842 		0
+matmul_openmp:		16.999960	1973.794768 		0
+matmul_global:		0.999928	33556.864176 		2.64825e-07
+matmul_shared:		1.000166	33548.864924 		2.64825e-07
+matmul_cublas		1.999855	16778.432088 		2.64825e-07
+
+==65342== NVPROF is profiling process 65342, command: bin/matmul 256 56
+==65342== Profiling application: bin/matmul 256 56
+==65342== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 37.63%  1.0246ms        14  73.187us  1.0880us  85.345us  [CUDA memcpy HtoD]
+ 29.55%  804.55us         2  402.28us  400.45us  404.10us  matmul_global_kernel(int, float*, float*, float*)
+ 17.72%  482.44us         6  80.406us  80.353us  80.448us  [CUDA memcpy DtoH]
+ 11.64%  316.93us         2  158.47us  158.43us  158.50us  matmul_shared_kernel(int, float*, float*, float*)
+  3.46%  94.113us         2  47.056us  45.088us  49.025us  sgemm_sm35_ldg_tt_32x16x64x8x16
+
+==65342== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 41.50%  330.72ms        24  13.780ms  7.0500us  328.93ms  cudaMalloc
+ 30.77%  245.25ms        26  9.4325ms  1.1120us  243.76ms  cudaFree
+ 27.05%  215.59ms         1  215.59ms  215.59ms  215.59ms  cudaDeviceReset
+  0.54%  4.2752ms        20  213.76us  23.025us  802.68us  cudaMemcpy
+  0.07%  532.26us       166  3.2060us     110ns  138.48us  cuDeviceGetAttribute
+  0.03%  220.56us         6  36.760us  27.717us  51.617us  cudaLaunch
+  0.01%  68.448us         2  34.224us  26.218us  42.230us  cuDeviceTotalMem
+  0.01%  63.352us         2  31.676us  20.285us  43.067us  cuDeviceGetName
+  0.01%  43.110us        32  1.3470us     895ns  6.6920us  cudaEventCreateWithFlags
+  0.01%  39.962us        32  1.2480us     887ns  4.5200us  cudaEventDestroy
+  0.00%  29.898us        44     679ns     302ns  5.9000us  cudaSetupArgument
+  0.00%  28.325us         4  7.0810us  5.0300us  9.8150us  cudaThreadSynchronize
+  0.00%  23.533us         1  23.533us  23.533us  23.533us  cudaSetDevice
+  0.00%  15.650us        20     782ns     525ns  3.4770us  cudaDeviceGetAttribute
+  0.00%  11.029us         6  1.8380us  1.0970us  3.7820us  cudaConfigureCall
+  0.00%  6.4580us         2  3.2290us  1.3830us  5.0750us  cudaGetDevice
+  0.00%  3.1540us         3  1.0510us     295ns  2.2120us  cuDeviceGetCount
+  0.00%  1.4720us         2     736ns     697ns     775ns  cudaGetLastError
+  0.00%  1.1930us         1  1.1930us  1.1930us  1.1930us  cuInit
+  0.00%     990ns         3     330ns     185ns     507ns  cuDeviceGet
+  0.00%     777ns         1     777ns     777ns     777ns  cuDriverGetVersion
+
+
