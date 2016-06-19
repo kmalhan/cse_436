@@ -7,8 +7,7 @@
  *	A[N][N] * B[N][N] = C[N][N]
  */
 
-// This is version v1.1
-// This is the correct version
+// This is version v1.2
 
 /* Include Files */
 #include <stdio.h>
@@ -93,17 +92,15 @@ int main(int argc, char *argv[]) {
     }
     N = atoi(argv[1]);
     if (argc > 2) num_tasks = atoi(argv[2]);
-    // modified to incorporate 5 array (originally 4)
-    REAL * heap_buffer = (REAL*)malloc(sizeof(REAL)*N*N*7); /* we use 5 matrix in this example */
+    REAL * heap_buffer = (REAL*)malloc(sizeof(REAL)*N*N*7); /* we use 7 matrix in this example */
     /* below is a cast from memory buffer to a 2-d row-major array */
     REAL *A = heap_buffer;
     REAL *B = &heap_buffer[N*N];
     REAL *C_base = &heap_buffer[2*N*N];
     REAL *C_openmp = &heap_buffer[3*N*N];
-    REAL *C_cuda_v1 = &heap_buffer[4*N*N];		// added
-    REAL *C_cuda_v2 = &heap_buffer[5*N*N];		// added
-    REAL *C_cuda_v3 = &heap_buffer[6*N*N];		// added
-    // REVIEW: If it is necessary to have separate matrix for all cuda function
+    REAL *C_cuda_v1 = &heap_buffer[4*N*N];
+    REAL *C_cuda_v2 = &heap_buffer[5*N*N];
+    REAL *C_cuda_v3 = &heap_buffer[6*N*N];
 
     srand48((1 << 12));
     init(N, N, A);
@@ -118,10 +115,7 @@ int main(int argc, char *argv[]) {
     matmul_openmp(N, A, B, C_openmp, num_tasks);
     elapsed_openmp = (read_timer() - elapsed_openmp);
 
-    /* call and timing for the three CUDA versions */
-    /* there are three devices you can use on gpu.secs.oakland.edu, 0, 2, 3.
-     * 1 is a graphical card with less computation capability.
-     */
+	/* Set the device to run cuda code */
     cudaSetDevice(0);
 
     /* call and time for matmul_cuda_v1_vanilla(int N, REAL *A, REAL *B, REAL *C); */
@@ -142,7 +136,7 @@ int main(int argc, char *argv[]) {
     matmul_cuda_v1_cublas(N, A, B, C_cuda_v3);
     elapsed_cuda_v3 = (read_timer() - elapsed_cuda_v3);
     
-    // Transpose result back to row major for third function
+    // For cublas, transpose C matrix back to row-major
     REAL* C_trans = (REAL*)malloc(sizeof(REAL)*N*N);
     int i, j;
     
@@ -152,6 +146,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
+	/* Print out result */
     printf("======================================================================================================\n");
     printf("Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=%d, %d threads/tasks\n", N, num_tasks);
     printf("------------------------------------------------------------------------------------------------------\n");
@@ -160,11 +155,11 @@ int main(int argc, char *argv[]) {
     printf("matmul_base:\t\t%4f\t%4f \t\t%g\n", elapsed_base * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_base)), maxerror(N, N, C_base, C_base));
     printf("matmul_openmp:\t\t%4f\t%4f \t\t%g\n", elapsed_openmp * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_openmp)), maxerror(N, N, C_base, C_openmp));
 
-    /* put other printf statements for outputing results for GPU execution */
     printf("matmul_global:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v1  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v1 )), maxerror(N, N, C_base, C_cuda_v1));
     printf("matmul_shared:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v2  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v2 )), maxerror(N, N, C_base, C_cuda_v2));
-    printf("matmul_cublas\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v3  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v3 )), maxerror(N, N, C_base, C_trans));
+    printf("matmul_cublas:\t\t%4f\t%4f \t\t%g\n", elapsed_cuda_v3  * 1.0e3, ((((2.0 * N) * N) * N) / (1.0e6 * elapsed_cuda_v3 )), maxerror(N, N, C_base, C_trans));
 
+	/* Free CPU memory */
     free(heap_buffer);
     free(C_trans);
 
@@ -187,7 +182,7 @@ void matmul_base(int N, REAL *A, REAL * B, REAL *C) {
     }
 }
 
-/* OpenMP inplementation */
+/* OpenMP implementation */
 void matmul_openmp(int N, REAL *A, REAL *B, REAL *C, int num_tasks) {
     int i, j, k;
 #pragma omp parallel for shared(N,A,B,C,num_tasks) private(i,j,k) num_threads(num_tasks)
@@ -278,40 +273,39 @@ void matmul_cuda_v1_shmem(int N, REAL *A, REAL *B, REAL *C) {
   cudaFree(d_C);
 }
 
-// REVIEW: Implementation of cuBLAS function
-// REVIEW: Use cudaMemcpy or cublasSetMatrix (row/col major)
 /*
  * call to sgemm of cublas library
  */
 void matmul_cuda_v1_cublas(int N, REAL *A, REAL *B, REAL *C) {
 
-  // Size of matrix
+  // Calculate allocation size for GPU memory
   size_t size = sizeof(REAL)*N*N;
 
   // Allocate GPU memory for matrix A, B, C
-  REAL* d_A;
+  REAL* d_A = NULL;
   cudaMalloc((void**)&d_A, size);
-  REAL* d_B;
+  REAL* d_B = NULL;
   cudaMalloc((void**)&d_B, size);
-  REAL* d_C;
+  REAL* d_C = NULL;
   cudaMalloc((void**)&d_C, size);
 
   // Initialize cuBLAS handle
   cublasHandle_t handle;
   cublasCreate(&handle);
 
-  // Set Matrix A and B
+  // Set Matrix A and B (Copy data from Host to Device)
   cublasSetMatrix(N, N, sizeof(REAL), A, N, d_A, N);
   cublasSetMatrix(N, N, sizeof(REAL), B, N, d_B, N);
 
-  // REVIEW: Check if this operation is correct!!
-  // use cublasSgemm as data is REAL (float)
+
+  // Transpose matrix A, B to column-major, and perform matrix multiplication
   REAL alpha = 1.0f;
   REAL beta = 0.0f;
   // (handle, transa, transb, m, n, k, *alpha, *A, lda, *B, ldb, *beta, *C, ldc)
   cublasSgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, N, N, N, &alpha, d_A, N, d_B, N, &beta, d_C, N);
 
-  // Get C
+  // Get matrix C (Copy data from Device to Host)
+  // Note: matrix C is column-major at this point
   cublasGetMatrix(N, N, sizeof(REAL), d_C, N, C, N);
 
   // Free GPU memory
@@ -340,8 +334,9 @@ __global__ void matmul_global_kernel(int N, REAL* A, REAL* B, REAL* C){
   for (i=0; i<N; i++)
     temp += A[row*N+i] * B[i*N+col];
 
-    // Write result to C
-    C[row*N+col] = temp;
+  // Write result to C
+  if ( row<N && col<N )
+	 C[row*N+col] = temp;
 }
 
 /*
