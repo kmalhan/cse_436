@@ -74,6 +74,9 @@ int main(int argc, char *argv[]) {
         init(N, A);
         local_A = A;
         temp = (REAL *) malloc(sizeof(REAL) * numprocs);
+        for (i=0; i<N; i++){
+          printf("values: %f \n", A[i]);
+        }
     } else {
         local_A = (REAL *) malloc(sizeof(REAL) * local_N);
     }
@@ -98,6 +101,7 @@ int main(int argc, char *argv[]) {
         if (min > local_A[i])
             min = local_A[i];
     }
+    printf("I am %d, and min value is %f\n", myrank, min);
 
     /* Step3: Send the local min to rank 0 */
     if (myrank == 0){
@@ -105,7 +109,7 @@ int main(int argc, char *argv[]) {
           MPI_Recv(&temp[i], 1, MPI_FLOAT, i, 4321, MPI_COMM_WORLD, &status); 
       }
     } else {
-      MPI_Send(&min, 0, MPI_FLOAT, 0, 4321, MPI_COMM_WORLD);
+      MPI_Send(&min, 1, MPI_FLOAT, 0, 4321, MPI_COMM_WORLD);
     }
     
     /* Step4: Rank 0 compute the final min */
