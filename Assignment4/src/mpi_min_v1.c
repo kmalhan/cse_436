@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         init(N, A);
         local_A = A;
     } else {
-        local_A = (REAL *) malloc(sizeof(REAL) * N_local);
+        local_A = (REAL *) malloc(sizeof(REAL) * local_N);
     }
 
     if (myrank == 0) elapsed = read_timer();
