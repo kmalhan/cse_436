@@ -1,6 +1,15 @@
 /*
+ *  Assignment 4 (CSE436)
+ *  Kazumi Malhan
+ *  07/01/2016
+ *
  * Find the min from an array, and output the value
+ * Version 1 (using scatter and reduce)
  */
+
+ // This is Rev 0.1
+ // TODO: Remove debug printf
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -24,6 +33,7 @@ double read_timer_ms() {
     return (double) tm.time * 1000.0 + (double) tm.millitm;
 }
 
+/* Array initialization */
 void init(int N, REAL *A) {
     int i;
 
@@ -36,15 +46,16 @@ void init(int N, REAL *A) {
  * N: The size of the REAL array A
  * A: The REAL array pointer
  * min: the min output
+ *
+ * To compile: mpicc mpi_min_v1.c -o mpi_min_v1
+ * To run: mpirun_v1 -np [number of processors] ./mpi_min_v1 [array_size]
  */
 int main(int argc, char *argv[]) {
     int N = 1024 * 512; /* the size of the global REAL array A */
     int local_N; /* local portion of the array each process to work on */
     REAL *A; /* the pointer to the global array A */
     REAL *local_A; /* the pointer to the local buffer by each process */
-    int i;
-    REAL* temp;
-    
+
     /* results */
     REAL min;
 
@@ -56,8 +67,7 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    MPI_Status status;  
-  
+
     if (myrank == 0) {
         fprintf(stderr, "Usage: min [<array size N, default: %d]\n", N);
         fprintf(stderr, "\tSize N should be dividable by num MPI processes]\n", N);
@@ -73,53 +83,13 @@ int main(int argc, char *argv[]) {
         srand48((1 << 12));
         init(N, A);
         local_A = A;
-        temp = (REAL *) malloc(sizeof(REAL) * numprocs);
-        for (i=0; i<N; i++){
-          printf("values: %f \n", A[i]);
-        }
     } else {
-        local_A = (REAL *) malloc(sizeof(REAL) * local_N);
+        local_A = (REAL *) malloc(sizeof(REAL) * N_local);
     }
-    
-    /***** Version 2 code (using Send and Recv) *****/
-    /* Start timer */
+
     if (myrank == 0) elapsed = read_timer();
-    
-    /* Step1: Rank 0 distrubutes the array into workers */ 
-    if (myrank == 0) {
-      for (i=1; i<numprocs; i++){
-          REAL *send_buffer = &A[local_N*i];
-          MPI_Send(send_buffer, local_N, MPI_FLOAT, i, 1234, MPI_COMM_WORLD);
-      }
-    } else {
-      MPI_Recv(local_A, local_N, MPI_FLOAT, 0, 1234, MPI_COMM_WORLD, &status);
-    }
 
-    /* Step2: Now we all compute the local min in a for loop */
-    min = *local_A;
-    for (i=1; i<local_N; i++){
-        if (min > local_A[i])
-            min = local_A[i];
-    }
-    printf("I am %d, and min value is %f\n", myrank, min);
-
-    /* Step3: Send the local min to rank 0 */
-    if (myrank == 0){
-      for (i=1; i<numprocs; i++){
-          MPI_Recv(&temp[i], 1, MPI_FLOAT, i, 4321, MPI_COMM_WORLD, &status); 
-      }
-    } else {
-      MPI_Send(&min, 1, MPI_FLOAT, 0, 4321, MPI_COMM_WORLD);
-    }
-    
-    /* Step4: Rank 0 compute the final min */
-    if (myrank == 0) {
-      for (i=1; i<numprocs; i++){
-          if (min > temp[i])
-                min = temp[i];
-      }
-    }
-    /**** End of version 2 ****/
+    // TODO: Implement version 1 code
 
     /* your implementation here for one of the version */
 //    printf("Hello World: %d of %d\n", myrank, numprocs);
