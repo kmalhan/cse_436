@@ -1,0 +1,116 @@
+-bash-4.2$ nvprof bin/matmul_1 2048 56 
+==86766== NVPROF is profiling process 86766, command: bin/matmul_1 2048 56
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=2048, 56 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:    Runtime (ms)   MFLOPS     Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:    51367.000103  334.453426    0
+matmul_openmp:    0.000000   inf    1
+matmul_global:    204.000235  84214.948171    3.5738e-07
+matmul_shared:    0.000000   inf    1
+matmul_cublas   0.000000   inf    1
+==86766== Profiling application: bin/matmul_1 2048 56
+==86766== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 91.84%  375.27ms         2  187.63ms  187.61ms  187.66ms  matmul_global_kernel(int, float*, float*, float*)
+  5.20%  21.253ms         4  5.3133ms  5.3115ms  5.3158ms  [CUDA memcpy HtoD]
+  2.96%  12.097ms         2  6.0486ms  5.0423ms  7.0549ms  [CUDA memcpy DtoH]
+
+==86766== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 42.46%  409.77ms         6  68.295ms  4.8934ms  195.43ms  cudaMemcpy
+ 41.28%  398.40ms         6  66.400ms  96.404us  397.70ms  cudaMalloc
+ 16.16%  155.95ms         1  155.95ms  155.95ms  155.95ms  cudaDeviceReset
+  0.05%  480.84us         6  80.140us  63.594us  124.20us  cudaFree
+  0.04%  357.17us        83  4.3030us     276ns  152.99us  cuDeviceGetAttribute
+  0.01%  76.638us         2  38.319us  20.708us  55.930us  cudaLaunch
+  0.01%  49.797us         1  49.797us  49.797us  49.797us  cuDeviceTotalMem
+  0.00%  38.514us         1  38.514us  38.514us  38.514us  cuDeviceGetName
+  0.00%  21.001us         1  21.001us  21.001us  21.001us  cudaSetDevice
+  0.00%  9.1890us         8  1.1480us     139ns  6.4000us  cudaSetupArgument
+  0.00%  4.2400us         2  2.1200us     600ns  3.6400us  cuDeviceGetCount
+  0.00%  3.1450us         2  1.5720us     831ns  2.3140us  cudaConfigureCall
+  0.00%  1.0740us         2     537ns     367ns     707ns  cuDeviceGet
+
+=============================================================================================================
+
+-bash-4.2$ nvprof bin/matmul_2 2048 56 
+==86948== NVPROF is profiling process 86948, command: bin/matmul_2 2048 56
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=2048, 56 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:    Runtime (ms)   MFLOPS     Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:    52755.000114  325.653855    0
+matmul_openmp:    0.000000   inf    1
+matmul_global:    0.000000   inf    1
+matmul_shared:    92.999935 184729.904986     3.5738e-07
+matmul_cublas   0.000000   inf    1
+==86948== Profiling application: bin/matmul_2 2048 56
+==86948== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 81.91%  151.44ms         2  75.719ms  75.711ms  75.727ms  matmul_shared_kernel(int, float*, float*, float*)
+ 11.53%  21.309ms         4  5.3273ms  5.3112ms  5.3745ms  [CUDA memcpy HtoD]
+  6.56%  12.130ms         2  6.0651ms  5.0424ms  7.0877ms  [CUDA memcpy DtoH]
+
+==86948== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 53.33%  392.98ms         6  65.496ms  98.982us  392.26ms  cudaMalloc
+ 25.30%  186.42ms         6  31.069ms  4.8897ms  83.746ms  cudaMemcpy
+ 21.23%  156.44ms         1  156.44ms  156.44ms  156.44ms  cudaDeviceReset
+  0.07%  491.54us         6  81.922us  62.470us  127.99us  cudaFree
+  0.04%  318.52us        83  3.8370us     283ns  134.75us  cuDeviceGetAttribute
+  0.01%  82.841us         2  41.420us  26.629us  56.212us  cudaLaunch
+  0.01%  44.036us         1  44.036us  44.036us  44.036us  cuDeviceGetName
+  0.01%  42.657us         1  42.657us  42.657us  42.657us  cuDeviceTotalMem
+  0.00%  22.673us         1  22.673us  22.673us  22.673us  cudaSetDevice
+  0.00%  10.940us         8  1.3670us     142ns  7.7170us  cudaSetupArgument
+  0.00%  4.9500us         2  2.4750us  1.1770us  3.7730us  cuDeviceGetCount
+  0.00%  3.2760us         2  1.6380us     935ns  2.3410us  cudaConfigureCall
+  0.00%  1.3440us         2     672ns     507ns     837ns  cuDeviceGet
+
+=================================================================================================================
+
+-bash-4.2$ nvprof bin/matmul_3 2048 56 
+==87040== NVPROF is profiling process 87040, command: bin/matmul_3 2048 56
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=2048, 56 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:    Runtime (ms)   MFLOPS     Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:    52819.999933  325.253109    0
+matmul_openmp:    0.000000   inf    1
+matmul_global:    0.000000   inf    1
+matmul_shared:    0.000000   inf    1
+matmul_cublas   24.999857 687198.699543     3.5738e-07
+==87040== Profiling application: bin/matmul_3 2048 56
+==87040== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 43.69%  21.252ms         6  3.5421ms  1.1520us  5.3135ms  [CUDA memcpy HtoD]
+ 31.82%  15.478ms         2  7.7392ms  7.7388ms  7.7396ms  sgemm_sm35_ldg_tt_128x8x256x16x32
+ 24.49%  11.916ms         2  5.9580ms  5.0426ms  6.8733ms  [CUDA memcpy DtoH]
+
+==87040== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 40.17%  353.59ms        12  29.466ms  7.8830us  352.32ms  cudaMalloc
+ 31.15%  274.25ms        14  19.589ms     599ns  273.45ms  cudaFree
+ 22.89%  201.49ms         1  201.49ms  201.49ms  201.49ms  cudaDeviceReset
+  5.67%  49.897ms         8  6.2371ms  12.454us  15.513ms  cudaMemcpy
+  0.08%  672.33us       166  4.0500us     280ns  147.55us  cuDeviceGetAttribute
+  0.01%  103.41us         2  51.706us  50.133us  53.280us  cuDeviceTotalMem
+  0.01%  85.699us         2  42.849us  42.696us  43.003us  cuDeviceGetName
+  0.01%  61.258us         2  30.629us  25.230us  36.028us  cudaLaunch
+  0.00%  32.956us        32  1.0290us     587ns  5.1300us  cudaEventCreateWithFlags
+  0.00%  32.596us         1  32.596us  32.596us  32.596us  cudaSetDevice
+  0.00%  17.206us        32     537ns     379ns  1.9240us  cudaEventDestroy
+  0.00%  14.029us         4  3.5070us  2.6270us  5.2410us  cudaThreadSynchronize
+  0.00%  11.022us        20     551ns     256ns  2.4660us  cudaDeviceGetAttribute
+  0.00%  9.3980us        28     335ns     139ns  4.4770us  cudaSetupArgument
+  0.00%  6.2200us         3  2.0730us     690ns  4.6100us  cuDeviceGetCount
+  0.00%  5.1120us         2  2.5560us  1.3000us  3.8120us  cudaGetDevice
+  0.00%  2.3550us         2  1.1770us  1.0880us  1.2670us  cudaConfigureCall
+  0.00%  1.9400us         3     646ns     467ns     927ns  cuDeviceGet
+  0.00%  1.2300us         1  1.2300us  1.2300us  1.2300us  cuInit
+  0.00%     923ns         1     923ns     923ns     923ns  cuDriverGetVersion
+  0.00%     880ns         2     440ns     331ns     549ns  cudaGetLastError

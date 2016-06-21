@@ -1,0 +1,35 @@
+======================================================================================================
+Matrix Multiplication: A[M][K] * B[k][N] = C[M][N], M=K=N=1024, 16 threads/tasks
+------------------------------------------------------------------------------------------------------
+Performance:		Runtime (ms)	 MFLOPS 		Error (compared to base)
+------------------------------------------------------------------------------------------------------
+matmul_base:		6750.999928	318.098603 		0
+matmul_openmp:		638.000011	3365.961770 		0
+matmul_global:		354.000092	6066.336420 		3.57041e-07
+matmul_shared:		15.000105	143164.575296 		3.57041e-07
+matmul_cublas		0.000000	 inf 		1
+
+==12519== NVPROF is profiling process 12519, command: bin/matmul 1024 16
+==12519== Profiling application: bin/matmul 1024 16
+==12519== Profiling result:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 56.49%  23.564ms         1  23.564ms  23.564ms  23.564ms  matmul_global_kernel(int, float*, float*, float*)
+ 23.10%  9.6367ms         1  9.6367ms  9.6367ms  9.6367ms  matmul_shared_kernel(int, float*, float*, float*)
+ 12.74%  5.3123ms         4  1.3281ms  1.3279ms  1.3284ms  [CUDA memcpy HtoD]
+  7.67%  3.1994ms         2  1.5997ms  1.5985ms  1.6009ms  [CUDA memcpy DtoH]
+
+==12519== API calls:
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 62.46%  325.11ms         6  54.184ms  141.77us  324.28ms  cudaMalloc
+ 28.97%  150.80ms         1  150.80ms  150.80ms  150.80ms  cudaDeviceReset
+  8.37%  43.578ms         6  7.2630ms  983.80us  26.108ms  cudaMemcpy
+  0.13%  660.72us         6  110.12us  100.74us  139.06us  cudaFree
+  0.04%  191.81us        83  2.3110us     112ns  83.773us  cuDeviceGetAttribute
+  0.02%  79.605us         2  39.802us  27.875us  51.730us  cudaLaunch
+  0.01%  26.339us         1  26.339us  26.339us  26.339us  cuDeviceTotalMem
+  0.00%  20.987us         1  20.987us  20.987us  20.987us  cuDeviceGetName
+  0.00%  10.058us         1  10.058us  10.058us  10.058us  cudaSetDevice
+  0.00%  9.9850us         8  1.2480us     312ns  6.0130us  cudaSetupArgument
+  0.00%  3.3650us         2  1.6820us  1.2050us  2.1600us  cudaConfigureCall
+  0.00%  2.2790us         2  1.1390us     323ns  1.9560us  cuDeviceGetCount
+  0.00%     623ns         2     311ns     165ns     458ns  cuDeviceGet
