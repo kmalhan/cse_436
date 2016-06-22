@@ -55,10 +55,11 @@ int main(int argc, char *argv[]) {
     int local_N; /* local portion of the array each process to work on */
     REAL *A; /* the pointer to the global array A */
     REAL *local_A; /* the pointer to the local buffer by each process */
+    int i;
 
     /* results */
-    REAL min;
-
+    REAL min, gmin;
+        
     /* for timing */
     double elapsed;
     int numprocs, myrank;
@@ -90,15 +91,26 @@ int main(int argc, char *argv[]) {
     if (myrank == 0) elapsed = read_timer();
 
     // TODO: Implement version 1 code
+    
+    /* Step1: Scatter the data to other processes */
+    MPI_Scatter(A, local_N, MPI_FLOAT, local_A, local_N, MPI_FLOAT, root, MPI_COMM_WORLD);
 
-    /* your implementation here for one of the version */
-//    printf("Hello World: %d of %d\n", myrank, numprocs);
+    /* Step2: Each process compute local min */
+    min = local_A[0];
+    for (i=1; i<local_N; i++){
+        if (min > local_A[i])
+            min = local_A[i];
+    }
+
+    /* Step3: Reduce and find min of min */
+    MPI_Reduce(&min, &gmin, 1, MPI_FLOAT, MPI_MIN, root, MPI_COMM_WORLD);
+
 
     if (myrank == 0) {
         elapsed = (read_timer() - elapsed);
         printf("======================================================================================================\n");
         printf("Finding min of array of %d floats using %d MPI processes, implemented using MPI_Scatter/Reduce calls\n", N, numprocs);
-        printf("Result: min: %f\n", min);
+        printf("Result: min: %f\n", gmin);
         printf("Executime Time: %f seconds\n", elapsed);
     }
 
