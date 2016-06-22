@@ -7,7 +7,7 @@
  * Version 1 (using scatter and reduce)
  */
 
- // This is Rev 0.1
+ // This is Rev 1.0
  // TODO: Remove debug printf
 
 #include <stdio.h>

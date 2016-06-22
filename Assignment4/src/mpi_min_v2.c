@@ -7,7 +7,7 @@
  * Version 2 (using send and recv)
  */
 
- // This is Rev 1.0
+ // This is Rev 1.1
  // TODO: Remove debug printf
 
 #include <stdio.h>
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
     if (myrank == 0) {
         elapsed = (read_timer() - elapsed);
         printf("======================================================================================================\n");
-        printf("Finding min of array of %d floats using %d MPI processes, implemented using MPI_Scatter/Reduce calls\n", N, numprocs);
+        printf("Finding min of array of %d floats using %d MPI processes, implemented using MPI_Send/Recv calls\n", N, numprocs);
         printf("Result: min: %f\n", min);
         printf("Executime Time: %f seconds\n", elapsed);
     }
