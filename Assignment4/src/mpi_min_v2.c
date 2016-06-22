@@ -48,7 +48,7 @@ void init(int N, REAL *A) {
  * min: the min output
  *
  * To compile: mpicc mpi_min_v2.c -o mpi_min_v2
- * To run: mpirun_v2 -np [number of processors] ./mpi_min_v2 [array_size]
+ * To run: mpirun -np [number of processors] ./mpi_min_v2 [array_size]
  */
 int main(int argc, char *argv[]) {
     int N = 1024 * 512; /* the size of the global REAL array A */
