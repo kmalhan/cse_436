@@ -7,8 +7,7 @@
  * Version 2 (using send and recv)
  */
 
- // This is Rev 1.1
- // TODO: Remove debug printf
+ // This is Rev 1.2
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,9 +86,6 @@ int main(int argc, char *argv[]) {
         init(N, A);
         local_A = A;
         temp = (REAL *) malloc(sizeof(REAL) * numprocs);
-        //for (i=0; i<N; i++){
-          //printf("values: %f \n", A[i]);
-        //}
     } else {
         local_A = (REAL *) malloc(sizeof(REAL) * local_N);
     }
@@ -113,7 +109,6 @@ int main(int argc, char *argv[]) {
       if (min > local_A[i])
         min = local_A[i];
     }
-    //printf("I am %d, and min value is %f\n", myrank, min);
 
     /* Step3: Send the local min to rank 0 */
     if (myrank == 0){

@@ -4,11 +4,10 @@
  *  07/01/2016
  *
  * Find the min from an array, and output the value
- * Version 1 (using scatter and reduce)
+ * Version 1 (using Scatter and Reduce)
  */
 
- // This is Rev 1.0
- // TODO: Remove debug printf
+ // This is Rev 1.2
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
 
     /* results */
     REAL min, gmin;
-        
+
     /* for timing */
     double elapsed;
     int numprocs, myrank;
@@ -90,8 +89,6 @@ int main(int argc, char *argv[]) {
 
     if (myrank == 0) elapsed = read_timer();
 
-    // TODO: Implement version 1 code
-    
     /* Step1: Scatter the data to other processes */
     MPI_Scatter(A, local_N, MPI_FLOAT, local_A, local_N, MPI_FLOAT, root, MPI_COMM_WORLD);
 
@@ -102,9 +99,8 @@ int main(int argc, char *argv[]) {
             min = local_A[i];
     }
 
-    /* Step3: Reduce and find min of min */
+    /* Step3: Reduce and find min of min, store into gmin */
     MPI_Reduce(&min, &gmin, 1, MPI_FLOAT, MPI_MIN, root, MPI_COMM_WORLD);
-
 
     if (myrank == 0) {
         elapsed = (read_timer() - elapsed);
