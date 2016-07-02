@@ -1,0 +1,41 @@
+Linux ringo.secs.oakland.edu 2.6.32-573.3.1.el6.x86_64 #1 SMP Thu Aug 13 12:55:33 CDT 2015 x86_64 x86_64 x86_64 GNU/Linux
+======================================================================================================
+Finding min of array of 100000000 floats using 1 MPI processes, implemented using MPI_Scatter/Reduce calls
+Result: min: 0.000000
+Executime Time: 0.309000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 2 MPI processes, implemented using MPI_Scatter/Reduce calls
+Result: min: 0.000000
+Executime Time: 0.511000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 4 MPI processes, implemented using MPI_Scatter/Reduce calls
+Result: min: 0.000000
+Executime Time: 0.272000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 8 MPI processes, implemented using MPI_Scatter/Reduce calls
+Result: min: 0.000000
+Executime Time: 0.202000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 16 MPI processes, implemented using MPI_Scatter/Reduce calls
+Result: min: 0.000000
+Executime Time: 0.228000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 1 MPI processes, implemented using MPI_Send/Recv calls
+Result: min: 0.000000
+Executime Time: 0.231000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 2 MPI processes, implemented using MPI_Send/Recv calls
+Result: min: 0.000000
+Executime Time: 0.278000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 4 MPI processes, implemented using MPI_Send/Recv calls
+Result: min: 0.000000
+Executime Time: 0.235000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 8 MPI processes, implemented using MPI_Send/Recv calls
+Result: min: 0.000000
+Executime Time: 0.210000 seconds
+======================================================================================================
+Finding min of array of 100000000 floats using 16 MPI processes, implemented using MPI_Send/Recv calls
+Result: min: 0.000000
+Executime Time: 0.225000 seconds
